@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Bjarke Pedersen <contact@bjarke.io>"]
 
 [dependencies]
-minifb = "0.10.6"
-rgb = "0.8.11"
-rand = "0.5.4"
+minifb = "*"
+rgb = "*"
+rand = "*"
+cgmath = "*"
+rayon = "*"
