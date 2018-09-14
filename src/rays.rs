@@ -1,13 +1,39 @@
 use cgmath::InnerSpace;
+use cgmath::Matrix4;
 use cgmath::Vector3;
+use cgmath::Vector4;
+use scene::Camera;
 use scene::Ray;
 use Sphere;
 
-pub fn intersect_sphere(ray: &Ray, sphere: &Sphere) -> Option<(Vector3<f32>)> {
+pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f32>)> {
     let o = ray.p1;
-    let l = (ray.p2 - ray.p1).normalize();
+    let p = ray.p2;
+    let l = (p - o).normalize();
     let c = sphere.pos;
     let r = sphere.radius;
+
+    // let up = Vector3::new(0.0, 0.0, 1.0);
+    // let target = camera.pos + Vector3::new(0.0, 1.0, 0.0);
+
+    // let zaxis = (o - target).normalize();
+    // let xaxis = (up.cross(zaxis)).normalize();
+    // let yaxis = zaxis.cross(xaxis);
+
+    // let orientation = Matrix4::new(
+    //     xaxis[0], yaxis[0], zaxis[0], 0.0, xaxis[1], yaxis[1], zaxis[1], 0.0, xaxis[2], yaxis[2],
+    //     zaxis[2], 0.0, 0.0, 0.0, 0.0, 1.0,
+    // );
+
+    // let translation = Matrix4::new(
+    //     1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -o[0], -o[1], -o[2], 1.0,
+    // );
+
+    // let wat = orientation * translation;
+
+    // let eh = p.extend(1.0) * wat;
+
+    // let weew = eh.truncate();
 
     // let ray_direction = Vector3::new(
     //     ray.p2.x - ray.p1.x,
@@ -30,9 +56,9 @@ pub fn intersect_sphere(ray: &Ray, sphere: &Sphere) -> Option<(Vector3<f32>)> {
 
         let solution = d_1.min(d_2);
         return Some(Vector3::new(
-            o.x + solution * ray.p2.x,
-            o.y + solution * ray.p2.y,
-            o.z + solution * ray.p2.z,
+            o.x + solution * p.x,
+            o.y + solution * p.y,
+            o.z + solution * p.z,
         ));
     } else {
         return None;

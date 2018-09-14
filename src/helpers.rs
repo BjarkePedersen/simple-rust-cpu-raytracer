@@ -16,23 +16,11 @@ pub fn byte_to_rgb(hex: u32) -> (u8, u8, u8) {
     ((hex >> 16) as u8, (hex >> 8) as u8, hex as u8)
 }
 
-pub fn uv_8b_x(index: usize) -> u32 {
-    ((index % WIDTH as usize) as f32 / (WIDTH as f32 / 255.0)) as u32
-}
-
-pub fn uv_8b_y(index: usize) -> u32 {
-    ((index as f32 / WIDTH as f32) / (HEIGHT as f32 / 255.0)) as u32
-}
-
 pub fn uv(index: usize) -> UV {
     UV {
         x: (index % WIDTH as usize) as f32,
         y: (index as f32 / WIDTH as f32) as f32,
     }
-}
-
-pub fn uv_y(index: usize) -> u32 {
-    (index as f32 / WIDTH as f32) as u32
 }
 
 pub fn distance(vec1: Vector3<f32>, vec2: Vector3<f32>) -> f32 {
@@ -43,6 +31,6 @@ pub fn rad(deg: f32) -> f32 {
     deg * f32::consts::PI / 180.0
 }
 
-pub fn deg(rad: f32) -> f32 {
-    rad * 180.0 / f32::consts::PI
-}
+// pub fn deg(rad: f32) -> f32 {
+//     rad * 180.0 / f32::consts::PI
+// }
