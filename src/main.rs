@@ -16,12 +16,12 @@ mod helpers;
 mod rays;
 mod scene;
 
-const WIDTH: usize = 400;
-const HEIGHT: usize = 400;
-const FOV: f32 = 90.0;
+const WIDTH: usize = 600;
+const HEIGHT: usize = 600;
+const FOV: f64 = 90.0;
 
-const MOVE_SPEED: f32 = 0.2;
-const ROT_SPEED: f32 = 0.05;
+const MOVE_SPEED: f64 = 0.2;
+const ROT_SPEED: f64 = 0.05;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -40,7 +40,9 @@ fn main() {
     let mut distance_pass = false;
     let mut sample_iter: u32 = 0;
 
-    let pixel_size = 1.0 / WIDTH as f32;
+    let pixel_size = 1.0 / WIDTH as f64;
+    let mut focus_distance: f64 = 5.0;
+    let mut apeture_size: f64 = 500.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         window.get_keys().map(|keys| {
@@ -56,6 +58,12 @@ fn main() {
                     Key::Right => scene.cameras[0].rot.z += ROT_SPEED,
                     Key::Up => scene.cameras[0].rot.x += ROT_SPEED,
                     Key::Down => scene.cameras[0].rot.x -= ROT_SPEED,
+                    Key::Q => scene.cameras[0].rot.y += ROT_SPEED,
+                    Key::E => scene.cameras[0].rot.y -= ROT_SPEED,
+                    Key::J => focus_distance -= 0.1,
+                    Key::L => focus_distance += 0.1,
+                    Key::M => apeture_size -= 10.0,
+                    Key::I => apeture_size += 10.0,
                     _ => (),
                 };
                 match t {
@@ -68,7 +76,13 @@ fn main() {
                     | Key::Left
                     | Key::Right
                     | Key::Up
-                    | Key::Down => {
+                    | Key::Down
+                    | Key::Q
+                    | Key::E
+                    | Key::J
+                    | Key::L
+                    | Key::I
+                    | Key::M => {
                         rgb_buffer.iter_mut().for_each(|col| {
                             *col = (0, 0, 0);
                         });
@@ -76,9 +90,6 @@ fn main() {
                     }
                     Key::Enter => {
                         distance_pass = !distance_pass;
-                        rgb_buffer.iter_mut().for_each(|col| {
-                            *col = (0, 0, 0);
-                        });
                         rgb_buffer = vec![(0, 0, 0); WIDTH * HEIGHT];
                         sample_iter = 0;
                     }
@@ -87,67 +98,84 @@ fn main() {
             }
         });
 
+        let rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
+            * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
+            * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
+
+        let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
+        let jitter_size = 2.0 * apeture_size * (1.0 - 1.0 / (focus_distance - 1.0));
+
         rgb_buffer
             .par_iter_mut()
             .enumerate()
             .for_each(|(i, pixel)| {
                 let mut rng = thread_rng();
-                let mut col = rgb(255, 255, 255);
+                let mut col = Col::new(1.0, 1.0, 1.0);
 
-                let mut closest_ray: f32 = std::f32::MAX;
+                let mut closest_ray: f64 = std::f64::MAX;
 
-                let wut = Vector3::new(
-                    ((uv(WIDTH * HEIGHT - i - 1).x - WIDTH as f32 / 2.0) / HEIGHT as f32)
-                        * 2.0
-                        * (rad(FOV) / 2.0).tan()
-                        + rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0),
-                    1.0,
-                    ((uv(WIDTH * HEIGHT - i - 1).y - HEIGHT as f32 / 2.0) / HEIGHT as f32)
-                        * 2.0
-                        * (rad(FOV) / 2.0).tan()
-                        + rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0),
-                );
+                let jitter_x = rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0);
+                let jitter_z = rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0);
 
-                let x = cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
-                let y = cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y));
-                let z = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z));
+                let focus_jitter = Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * apeture_size;
 
-                let newRay = x * y * z * wut.extend(0.0);
+                let line = {
+                    let uv = uv(WIDTH * HEIGHT - i - 1);
 
-                let eh = newRay.truncate();
-
-                let ray = Ray {
-                    p1: scene.cameras[0].pos,
-                    p2: eh + scene.cameras[0].pos,
+                    Vector3::new(
+                        ((uv.x - WIDTH as f64 / 2.0) / HEIGHT as f64) * uv_size
+                            + jitter_x * jitter_size,
+                        1.0,
+                        ((uv.y - HEIGHT as f64 / 2.0) / HEIGHT as f64) * uv_size
+                            + jitter_z * jitter_size,
+                    )
                 };
 
+                let ray1_mat4 = rot * line.extend(0.0);
+                let line = ray1_mat4.truncate();
+
+                let focus_jitter_mat4 = rot * focus_jitter.extend(0.0);
+                let focus_jitter = focus_jitter_mat4.truncate();
+
+                let ray = Ray {
+                    p1: focus_jitter + scene.cameras[0].pos,
+                    p2: line + scene.cameras[0].pos,
+                };
+
+                let mut intersected = false;
                 for sphere in &scene.spheres {
                     let intersect_point = intersect_sphere(&ray, &sphere, &scene.cameras[0]);
                     if let Some(intersect) = intersect_point {
+                        intersected = true;
                         let distance = distance(scene.cameras[0].pos, intersect);
                         if distance < closest_ray {
                             closest_ray = distance;
                             if !distance_pass {
                                 col = sphere.material.color;
                             } else {
-                                col = rgb(
-                                    distance as u32 * distance as u32 / 10,
-                                    distance as u32 * distance as u32 / 10,
-                                    distance as u32 * distance as u32 / 10,
-                                );
+                                col =
+                                    Col::new(distance / 200.0, distance / 200.0, distance / 200.0);
                             }
                         }
                     }
                 }
-                pixel.0 += byte_to_rgb(col).0 as u32;
-                pixel.1 += byte_to_rgb(col).1 as u32;
-                pixel.2 += byte_to_rgb(col).2 as u32;
+                // Sky color
+                if !intersected {
+                    col = mix_col(
+                        scene.sky.colors[0],
+                        scene.sky.colors[1],
+                        1.0 / (line.z.abs() + 1.0),
+                    )
+                }
+                pixel.0 += byte_to_rgb(col_to_rgb_u32(col)).0 as u32;
+                pixel.1 += byte_to_rgb(col_to_rgb_u32(col)).1 as u32;
+                pixel.2 += byte_to_rgb(col_to_rgb_u32(col)).2 as u32;
             });
 
         sample_iter += 1;
 
         for (col_1, col_2) in rgb_buffer.iter().zip(buffer.iter_mut()) {
-            *col_2 = rgb(
+            *col_2 = rgb_u32(
                 col_1.0 as u32 / sample_iter,
                 col_1.1 as u32 / sample_iter,
                 col_1.2 as u32 / sample_iter,

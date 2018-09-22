@@ -6,7 +6,7 @@ use scene::Camera;
 use scene::Ray;
 use Sphere;
 
-pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f32>)> {
+pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f64>)> {
     let o = ray.p1;
     let p = ray.p2;
     let l = (p - o).normalize();
@@ -48,7 +48,7 @@ pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(
 
     let discriminant = l_dot_o_c.powi(2) - o_c.magnitude2() + r.powi(2);
 
-    if discriminant > 0.0 {
+    if discriminant > 0.0 && l_dot_o_c < 0.0 {
         let discriminant_sqrt = discriminant.sqrt();
 
         let d_1 = -l_dot_o_c + discriminant_sqrt;
