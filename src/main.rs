@@ -25,7 +25,7 @@ const ROT_SPEED: f64 = 0.05;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
-    let mut rgb_buffer: Vec<(u32, u32, u32)> = vec![(0, 0, 0); WIDTH * HEIGHT];
+    let mut rgb_buffer: Vec<(Col)> = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
 
     let mut window = Window::new(
         "Test - ESC to exit",
@@ -83,14 +83,12 @@ fn main() {
                     | Key::L
                     | Key::I
                     | Key::M => {
-                        rgb_buffer.iter_mut().for_each(|col| {
-                            *col = (0, 0, 0);
-                        });
+                        rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
                         sample_iter = 0;
                     }
                     Key::Enter => {
                         distance_pass = !distance_pass;
-                        rgb_buffer = vec![(0, 0, 0); WIDTH * HEIGHT];
+                        rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
                         sample_iter = 0;
                     }
                     _ => (),
@@ -167,19 +165,21 @@ fn main() {
                         1.0 / (line.z.abs() + 1.0),
                     )
                 }
-                pixel.0 += byte_to_rgb(col_to_rgb_u32(col)).0 as u32;
-                pixel.1 += byte_to_rgb(col_to_rgb_u32(col)).1 as u32;
-                pixel.2 += byte_to_rgb(col_to_rgb_u32(col)).2 as u32;
+                pixel.r += col.r.powf(2.0);
+                pixel.g += col.g.powf(2.0);
+                pixel.b += col.b.powf(2.0);
             });
 
         sample_iter += 1;
 
         for (col_1, col_2) in rgb_buffer.iter().zip(buffer.iter_mut()) {
-            *col_2 = rgb_u32(
-                col_1.0 as u32 / sample_iter,
-                col_1.1 as u32 / sample_iter,
-                col_1.2 as u32 / sample_iter,
+            let col = Col::new(
+                (col_1.r / sample_iter as f64).sqrt(),
+                (col_1.g / sample_iter as f64).sqrt(),
+                (col_1.b / sample_iter as f64).sqrt(),
             );
+
+            *col_2 = col_to_rgb_u32(col);
         }
 
         {

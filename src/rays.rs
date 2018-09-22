@@ -13,36 +13,6 @@ pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(
     let c = sphere.pos;
     let r = sphere.radius;
 
-    // let up = Vector3::new(0.0, 0.0, 1.0);
-    // let target = camera.pos + Vector3::new(0.0, 1.0, 0.0);
-
-    // let zaxis = (o - target).normalize();
-    // let xaxis = (up.cross(zaxis)).normalize();
-    // let yaxis = zaxis.cross(xaxis);
-
-    // let orientation = Matrix4::new(
-    //     xaxis[0], yaxis[0], zaxis[0], 0.0, xaxis[1], yaxis[1], zaxis[1], 0.0, xaxis[2], yaxis[2],
-    //     zaxis[2], 0.0, 0.0, 0.0, 0.0, 1.0,
-    // );
-
-    // let translation = Matrix4::new(
-    //     1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -o[0], -o[1], -o[2], 1.0,
-    // );
-
-    // let wat = orientation * translation;
-
-    // let eh = p.extend(1.0) * wat;
-
-    // let weew = eh.truncate();
-
-    // let ray_direction = Vector3::new(
-    //     ray.p2.x - ray.p1.x,
-    //     ray.p2.y - ray.p1.y,
-    //     ray.p2.z - ray.p1.z,
-    // );
-
-    // let camera_direction = vec![0.0, 1.0, 0.0];
-
     let o_c = o - c;
     let l_dot_o_c = l.dot(o_c);
 
