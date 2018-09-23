@@ -42,7 +42,7 @@ fn main() {
 
     let pixel_size = 1.0 / WIDTH as f64;
     let mut focus_distance: f64 = 5.0;
-    let mut apeture_size: f64 = 500.0;
+    let mut apeture_size: f64 = 100.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         window.get_keys().map(|keys| {
@@ -60,8 +60,8 @@ fn main() {
                     Key::Down => scene.cameras[0].rot.x -= ROT_SPEED,
                     Key::Q => scene.cameras[0].rot.y += ROT_SPEED,
                     Key::E => scene.cameras[0].rot.y -= ROT_SPEED,
-                    Key::J => focus_distance -= 0.1,
-                    Key::L => focus_distance += 0.1,
+                    Key::J => focus_distance -= 1.1,
+                    Key::L => focus_distance += 1.1,
                     Key::M => apeture_size -= 10.0,
                     Key::I => apeture_size += 10.0,
                     _ => (),
@@ -162,7 +162,7 @@ fn main() {
                     col = mix_col(
                         scene.sky.colors[0],
                         scene.sky.colors[1],
-                        1.0 / (line.z.abs() + 1.0),
+                        1.0 / ((line.z - focus_jitter.z).abs() + 1.0),
                     )
                 }
                 pixel.r += col.r.powf(2.0);
