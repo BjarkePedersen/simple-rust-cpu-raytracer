@@ -16,12 +16,12 @@ mod helpers;
 mod rays;
 mod scene;
 
-const WIDTH: usize = 600;
-const HEIGHT: usize = 600;
+const WIDTH: usize = 400;
+const HEIGHT: usize = 400;
 const FOV: f64 = 90.0;
 
 const MOVE_SPEED: f64 = 0.2;
-const ROT_SPEED: f64 = 0.05;
+const ROT_SPEED: f64 = 0.1;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -45,25 +45,39 @@ fn main() {
     let mut apeture_size: f64 = 100.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
+        let mut rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
+            * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
+            * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
+
+        let mut movement = Vector3::new(0.0, 0.0, 0.0);
+
         window.get_keys().map(|keys| {
             for t in keys {
                 match t {
-                    Key::W => scene.cameras[0].pos.y += MOVE_SPEED,
-                    Key::S => scene.cameras[0].pos.y -= MOVE_SPEED,
-                    Key::A => scene.cameras[0].pos.x += MOVE_SPEED,
-                    Key::D => scene.cameras[0].pos.x -= MOVE_SPEED,
-                    Key::Space => scene.cameras[0].pos.z += MOVE_SPEED,
-                    Key::LeftShift => scene.cameras[0].pos.z -= MOVE_SPEED,
+                    Key::W => movement.y += MOVE_SPEED,
+                    Key::S => movement.y -= MOVE_SPEED,
+                    Key::A => movement.x += MOVE_SPEED,
+                    Key::D => movement.x -= MOVE_SPEED,
+                    Key::Space => movement.z += MOVE_SPEED,
+                    Key::LeftShift => movement.z -= MOVE_SPEED,
                     Key::Left => scene.cameras[0].rot.z -= ROT_SPEED,
                     Key::Right => scene.cameras[0].rot.z += ROT_SPEED,
                     Key::Up => scene.cameras[0].rot.x += ROT_SPEED,
                     Key::Down => scene.cameras[0].rot.x -= ROT_SPEED,
                     Key::Q => scene.cameras[0].rot.y += ROT_SPEED,
                     Key::E => scene.cameras[0].rot.y -= ROT_SPEED,
-                    Key::J => focus_distance -= 1.1,
-                    Key::L => focus_distance += 1.1,
+                    Key::J => focus_distance -= 0.1,
+                    Key::L => focus_distance += 0.1,
                     Key::M => apeture_size -= 10.0,
                     Key::I => apeture_size += 10.0,
+                    _ => (),
+                };
+                match t {
+                    Key::Left | Key::Right | Key::Up | Key::Down => {
+                        rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
+                            * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
+                            * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
+                    }
                     _ => (),
                 };
                 match t {
@@ -85,6 +99,10 @@ fn main() {
                     | Key::M => {
                         rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
                         sample_iter = 0;
+
+                        let pos = rot * movement.extend(0.0);
+                        let pos = pos.truncate();
+                        scene.cameras[0].pos += pos;
                     }
                     Key::Enter => {
                         distance_pass = !distance_pass;
@@ -95,10 +113,6 @@ fn main() {
                 };
             }
         });
-
-        let rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
-            * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
-            * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
 
         let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
         let jitter_size = 2.0 * apeture_size * (1.0 - 1.0 / (focus_distance - 1.0));
