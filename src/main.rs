@@ -131,6 +131,13 @@ fn main() {
 
                 let focus_jitter = Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * apeture_size;
 
+                // Anti aliasing
+                let aliasing_jitter = Vector3::new(
+                    rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0),
+                    0.0,
+                    rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0),
+                );
+
                 let line = {
                     let uv = uv(WIDTH * HEIGHT - i - 1);
 
@@ -150,8 +157,8 @@ fn main() {
                 let focus_jitter = focus_jitter_mat4.truncate();
 
                 let ray = Ray {
-                    p1: focus_jitter + scene.cameras[0].pos,
-                    p2: line + scene.cameras[0].pos,
+                    p1: focus_jitter + scene.cameras[0].pos + aliasing_jitter,
+                    p2: line + scene.cameras[0].pos + aliasing_jitter,
                 };
 
                 let mut intersected = false;
