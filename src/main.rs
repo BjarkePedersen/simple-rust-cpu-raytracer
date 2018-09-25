@@ -4,7 +4,7 @@ extern crate rand;
 extern crate rayon;
 extern crate rgb;
 
-use cgmath::Vector3;
+use cgmath::{Vector3, InnerSpace};
 use helpers::*;
 use minifb::{Key, Window, WindowOptions};
 use rand::prelude::*;
@@ -18,10 +18,10 @@ mod scene;
 
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
-const FOV: f64 = 90.0;
+const FOV: f32 = 90.0;
 
-const MOVE_SPEED: f64 = 0.2;
-const ROT_SPEED: f64 = 0.1;
+const MOVE_SPEED: f32 = 0.2;
+const ROT_SPEED: f32 = 0.1;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -40,9 +40,9 @@ fn main() {
     let mut distance_pass = false;
     let mut sample_iter: u32 = 0;
 
-    let pixel_size = 1.0 / WIDTH as f64;
-    let mut focus_distance: f64 = 5.0;
-    let mut apeture_size: f64 = 100.0;
+    let pixel_size = 1.0 / WIDTH as f32;
+    let mut focus_distance: f32 = 5.0;
+    let mut apeture_size: f32 = 100.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let mut rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
@@ -124,7 +124,7 @@ fn main() {
                 let mut rng = thread_rng();
                 let mut col = Col::new(1.0, 1.0, 1.0);
 
-                let mut closest_ray: f64 = std::f64::MAX;
+                let mut closest_ray: f32 = std::f32::MAX;
 
                 let jitter_x = rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0);
                 let jitter_z = rng.gen_range(-pixel_size / 2.0, pixel_size / 2.0);
@@ -142,10 +142,10 @@ fn main() {
                     let uv = uv(WIDTH * HEIGHT - i - 1);
 
                     Vector3::new(
-                        ((uv.x - WIDTH as f64 / 2.0) / HEIGHT as f64) * uv_size
+                        ((uv.x - WIDTH as f32 / 2.0) / HEIGHT as f32) * uv_size
                             + jitter_x * jitter_size,
                         1.0,
-                        ((uv.y - HEIGHT as f64 / 2.0) / HEIGHT as f64) * uv_size
+                        ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * uv_size
                             + jitter_z * jitter_size,
                     )
                 };
@@ -157,13 +157,13 @@ fn main() {
                 let focus_jitter = focus_jitter_mat4.truncate();
 
                 let ray = Ray {
-                    p1: focus_jitter + scene.cameras[0].pos + aliasing_jitter,
-                    p2: line + scene.cameras[0].pos + aliasing_jitter,
+                    pos: focus_jitter + scene.cameras[0].pos + aliasing_jitter,
+                    dir: (line - focus_jitter + aliasing_jitter).normalize(),
                 };
 
                 let mut intersected = false;
                 for sphere in &scene.spheres {
-                    let intersect_point = intersect_sphere(&ray, &sphere, &scene.cameras[0]);
+                    let intersect_point = intersect_sphere(&ray, &sphere, &scene.cameras[0] );
                     if let Some(intersect) = intersect_point {
                         intersected = true;
                         let distance = distance(scene.cameras[0].pos, intersect);
@@ -173,7 +173,7 @@ fn main() {
                                 col = sphere.material.color;
                             } else {
                                 col =
-                                    Col::new(distance / 200.0, distance / 200.0, distance / 200.0);
+                                    Col::new(distance / 20.0, distance / 20.0, distance / 20.0);
                             }
                         }
                     }
@@ -195,9 +195,9 @@ fn main() {
 
         for (col_1, col_2) in rgb_buffer.iter().zip(buffer.iter_mut()) {
             let col = Col::new(
-                (col_1.r / sample_iter as f64).sqrt(),
-                (col_1.g / sample_iter as f64).sqrt(),
-                (col_1.b / sample_iter as f64).sqrt(),
+                (col_1.r / sample_iter as f32).sqrt(),
+                (col_1.g / sample_iter as f32).sqrt(),
+                (col_1.b / sample_iter as f32).sqrt(),
             );
 
             *col_2 = col_to_rgb_u32(col);

@@ -1,5 +1,5 @@
 use cgmath::Vector3;
-use std::f64;
+use std::f32;
 use std::ops::Add;
 use std::ops::Div;
 use std::ops::Mul;
@@ -7,27 +7,27 @@ use std::ops::Sub;
 use {HEIGHT, WIDTH};
 
 pub struct UV {
-    pub x: f64,
-    pub y: f64,
+    pub x: f32,
+    pub y: f32,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Col {
-    pub r: f64,
-    pub g: f64,
-    pub b: f64,
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
 }
 
 impl Col {
-    pub fn new(r: f64, g: f64, b: f64) -> Col {
+    pub fn new(r: f32, g: f32, b: f32) -> Col {
         Col { r: r, g: g, b: b }
     }
 }
 
-impl Add<f64> for Col {
+impl Add<f32> for Col {
     type Output = Col;
 
-    fn add(self, val: f64) -> Col {
+    fn add(self, val: f32) -> Col {
         Col {
             r: self.r + val,
             g: self.g + val,
@@ -48,10 +48,10 @@ impl Add<Col> for Col {
     }
 }
 
-impl Sub<f64> for Col {
+impl Sub<f32> for Col {
     type Output = Col;
 
-    fn sub(self, val: f64) -> Col {
+    fn sub(self, val: f32) -> Col {
         Col {
             r: self.r + val,
             g: self.g + val,
@@ -72,10 +72,10 @@ impl Sub<Col> for Col {
     }
 }
 
-impl Mul<f64> for Col {
+impl Mul<f32> for Col {
     type Output = Col;
 
-    fn mul(self, val: f64) -> Col {
+    fn mul(self, val: f32) -> Col {
         Col {
             r: self.r * val,
             g: self.g * val,
@@ -84,10 +84,10 @@ impl Mul<f64> for Col {
     }
 }
 
-impl Div<f64> for Col {
+impl Div<f32> for Col {
     type Output = Col;
 
-    fn div(self, val: f64) -> Col {
+    fn div(self, val: f32) -> Col {
         Col {
             r: self.r / val,
             g: self.g / val,
@@ -96,7 +96,7 @@ impl Div<f64> for Col {
     }
 }
 
-pub fn mix_col(col1: Col, col2: Col, mix: f64) -> Col {
+pub fn mix_col(col1: Col, col2: Col, mix: f32) -> Col {
     col1 * mix + col2 * (1.0 - mix)
 }
 
@@ -119,19 +119,19 @@ pub fn byte_to_rgb(hex: u32) -> (u8, u8, u8) {
 
 pub fn uv(index: usize) -> UV {
     UV {
-        x: (index % WIDTH as usize) as f64,
-        y: (index as f64 / WIDTH as f64) as f64,
+        x: (index % WIDTH as usize) as f32,
+        y: (index as f32 / WIDTH as f32) as f32,
     }
 }
 
-pub fn distance(vec1: Vector3<f64>, vec2: Vector3<f64>) -> f64 {
+pub fn distance(vec1: Vector3<f32>, vec2: Vector3<f32>) -> f32 {
     ((vec2.x - vec1.x).powi(2) + (vec2.y - vec1.y).powi(2) + (vec2.z - vec1.z).powi(2)).sqrt()
 }
 
-pub fn rad(deg: f64) -> f64 {
-    deg * f64::consts::PI / 180.0
+pub fn rad(deg: f32) -> f32 {
+    deg * f32::consts::PI / 180.0
 }
 
-// pub fn deg(rad: f64) -> f64 {
-//     rad * 180.0 / f64::consts::PI
+// pub fn deg(rad: f32) -> f32 {
+//     rad * 180.0 / f32::consts::PI
 // }

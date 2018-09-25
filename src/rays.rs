@@ -6,10 +6,9 @@ use scene::Camera;
 use scene::Ray;
 use Sphere;
 
-pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f64>)> {
-    let o = ray.p1;
-    let p = ray.p2;
-    let l = (p - o).normalize();
+pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f32>)> {
+    let o = ray.pos;
+    let l = ray.dir;
     let c = sphere.pos;
     let r = sphere.radius;
 
@@ -25,11 +24,7 @@ pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(
         let d_2 = -l_dot_o_c - discriminant_sqrt;
 
         let solution = d_1.min(d_2);
-        return Some(Vector3::new(
-            o.x + solution * p.x,
-            o.y + solution * p.y,
-            o.z + solution * p.z,
-        ));
+        return Some(o + solution * l);
     } else {
         return None;
     }

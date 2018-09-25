@@ -6,36 +6,36 @@ use rand::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Camera {
-    pub pos: Vector3<f64>,
-    pub rot: Vector3<f64>,
-    pub focal_length: f64,
-    pub sensor_size: f64,
+    pub pos: Vector3<f32>,
+    pub rot: Vector3<f32>,
+    pub focal_length: f32,
+    pub sensor_size: f32,
 }
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
-    pub pos: Vector3<f64>,
-    pub radius: f64,
+    pub pos: Vector3<f32>,
+    pub radius: f32,
     pub material: Material,
 }
 
 #[derive(Debug, Clone)]
 pub struct Light {
-    pub pos: Vector3<f64>,
-    pub radius: f64,
+    pub pos: Vector3<f32>,
+    pub radius: f32,
     pub material: Material,
-    pub intensity: f64,
+    pub intensity: f32,
 }
 
 #[derive(Debug, Clone)]
 pub struct Sky {
     pub colors: Vec<Col>,
-    pub intensity: f64,
+    pub intensity: f32,
 }
 
 pub struct Ray {
-    pub p1: Vector3<f64>,
-    pub p2: Vector3<f64>,
+    pub pos: Vector3<f32>,
+    pub dir: Vector3<f32>,
 }
 
 #[derive(Debug, Clone)]
@@ -70,7 +70,7 @@ pub fn initialize_scene() -> Scene {
         },
     ];
 
-    for _i in 0..10 {
+    for _i in 0..50 {
         spheres.push(Sphere {
             pos: Vector3::new(
                 rng.gen_range(-5.0, 5.0),
