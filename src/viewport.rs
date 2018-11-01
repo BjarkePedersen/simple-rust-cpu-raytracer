@@ -1,6 +1,5 @@
-pub struct Render {
+pub struct Viewport {
     pub distance_pass: bool,
-    pub pixel_size: f32,
     pub sample_iter: u32,
     pub time: Time,
 }

@@ -1,12 +1,9 @@
 use cgmath::InnerSpace;
-use cgmath::Matrix4;
 use cgmath::Vector3;
-use cgmath::Vector4;
-use scene::Camera;
 use scene::Ray;
 use Sphere;
 
-pub fn intersect_sphere(ray: &Ray, sphere: &Sphere, camera: &Camera) -> Option<(Vector3<f32>)> {
+pub fn intersect_sphere(ray: &Ray, sphere: &Sphere) -> Option<(Vector3<f32>)> {
     let o = ray.pos;
     let l = ray.dir;
     let c = sphere.pos;

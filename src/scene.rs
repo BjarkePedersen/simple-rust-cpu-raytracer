@@ -1,6 +1,5 @@
 use cgmath::Vector3;
 use helpers::Col;
-use rgb_u32;
 
 use rand::prelude::*;
 
