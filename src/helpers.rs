@@ -96,10 +96,6 @@ impl Div<f32> for Col {
     }
 }
 
-// pub fn sort_by_closest(list: Vec<Sphere>, pos: Vector3<f32>) {
-//     list.clone().sort_by_key(|k| distance(pos, k.pos) as i32);
-// }
-
 pub fn mix_col(col1: Col, col2: Col, mix: f32) -> Col {
     col1 * mix + col2 * (1.0 - mix)
 }
@@ -153,17 +149,3 @@ pub fn clamp_min(min: f32, val: f32) -> f32 {
         val
     }
 }
-
-// pub struct OrderdF32(f32);
-
-// impl PartialOrd for OrderdF32 {
-//     pub fn ord(self, other: OrderdF32) -> Ordering {
-//         self.0.partial_ord(other.0)
-//     }
-// }
-
-// impl Ord for OrderdF32 {}
-
-// pub fn deg(rad: f32) -> f32 {
-//     rad * 180.0 / f32::consts::PI
-// }

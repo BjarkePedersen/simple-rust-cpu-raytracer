@@ -15,7 +15,9 @@ pub fn handle_movement(
     scene: &mut Scene,
     rgb_buffer: &mut Vec<(Col)>,
     render: &mut Viewport,
-    movement: &mut Vector3<f32>,
+    camera_movement: &mut Vector3<f32>,
+    mouse_movement: &mut Vector3<f32>,
+    moving: &mut bool,
     rot: &mut Matrix4<f32>,
     display_width: &usize,
     display_height: &usize,
@@ -26,12 +28,12 @@ pub fn handle_movement(
     window.get_keys().map(|keys| {
         for t in keys {
             match t {
-                Key::W => movement.y += MOVE_SPEED,
-                Key::S => movement.y -= MOVE_SPEED,
-                Key::A => movement.x += MOVE_SPEED,
-                Key::D => movement.x -= MOVE_SPEED,
-                Key::Space => movement.z += MOVE_SPEED,
-                Key::LeftShift => movement.z -= MOVE_SPEED,
+                Key::W => camera_movement.y += MOVE_SPEED,
+                Key::S => camera_movement.y -= MOVE_SPEED,
+                Key::A => camera_movement.x += MOVE_SPEED,
+                Key::D => camera_movement.x -= MOVE_SPEED,
+                Key::Space => camera_movement.z += MOVE_SPEED,
+                Key::LeftShift => camera_movement.z -= MOVE_SPEED,
                 Key::Left => scene.cameras[0].rot.z -= ROT_SPEED,
                 Key::Right => scene.cameras[0].rot.z += ROT_SPEED,
                 Key::Up => scene.cameras[0].rot.x += ROT_SPEED,
@@ -72,7 +74,7 @@ pub fn handle_movement(
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     render.sample_iter = 0;
 
-                    let pos = *rot * movement.extend(0.0);
+                    let pos = *rot * camera_movement.extend(0.0);
                     let pos = pos.truncate();
                     scene.cameras[0].pos += pos;
                 }
@@ -85,20 +87,8 @@ pub fn handle_movement(
             };
         }
     });
-}
 
-pub fn handle_mouse_movement(
-    window: &mut minifb::Window,
-    scene: &mut Scene,
-    rgb_buffer: &mut Vec<(Col)>,
-    render: &mut Viewport,
-    movement: &mut Vector3<f32>,
-    mouse_movement: &mut Vector3<f32>,
-    moving: &mut bool,
-    rot: &mut Matrix4<f32>,
-    display_width: &usize,
-    display_height: &usize,
-) {
+    // Mouse movement
     window.get_unscaled_mouse_pos(MouseMode::Pass).map(|mouse| {
         if *mouse_movement != Vector3::new(mouse.0 / 100 as f32, mouse.1 / 100 as f32, 0.0) {
             mouse_movement.x = mouse.0 / 100 as f32;
@@ -120,9 +110,11 @@ pub fn handle_mouse_movement(
         }
     });
 
-    if *movement == Vector3::new(0.0, 0.0, 0.0) {
+    if *camera_movement == Vector3::new(0.0, 0.0, 0.0) {
         *moving = false;
     } else {
         *moving = true;
     }
+
+    *camera_movement = Vector3::new(0.0, 0.0, 0.0);
 }

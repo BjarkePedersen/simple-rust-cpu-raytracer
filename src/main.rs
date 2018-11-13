@@ -48,6 +48,10 @@ fn main() {
         },
     };
 
+    let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
+    let jitter_size =
+        2.0 * scene.cameras[0].apeture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance - 1.0));
+
     let mut sorted_spheres = scene.spheres.clone();
     sorted_spheres.sort_by_key(|k| {
         OrderedFloat(clamp_min(
@@ -62,15 +66,15 @@ fn main() {
         moving: false,
     };
 
+    // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
         app_time::update_time(
             &mut window,
             &mut viewport.time.prev,
             &mut viewport.time.framecount,
             &mut viewport.time.sum,
+            &viewport.sample_iter,
         );
-
-        movement.camera_movement = Vector3::new(0.0, 0.0, 0.0);
 
         let mut rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
             * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
@@ -82,28 +86,12 @@ fn main() {
             &mut rgb_buffer,
             &mut viewport,
             &mut movement.camera_movement,
-            &mut rot,
-            &WIDTH,
-            &HEIGHT,
-        );
-
-        handle_mouse_movement(
-            &mut window,
-            &mut scene,
-            &mut rgb_buffer,
-            &mut viewport,
-            &mut movement.camera_movement,
             &mut movement.mouse_movement,
             &mut movement.moving,
             &mut rot,
             &WIDTH,
             &HEIGHT,
         );
-
-        let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
-        let jitter_size = 2.0
-            * scene.cameras[0].apeture_size
-            * (1.0 - 1.0 / (scene.cameras[0].focus_distance - 1.0));
 
         if movement.moving {
             // Only need to sort spheres if camera has moved
