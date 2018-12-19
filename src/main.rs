@@ -49,8 +49,6 @@ fn main() {
     };
 
     let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
-    let jitter_size =
-        2.0 * scene.cameras[0].apeture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance - 1.0));
 
     let mut sorted_spheres = scene.spheres.clone();
     sorted_spheres.sort_by_key(|k| {
@@ -92,6 +90,10 @@ fn main() {
             &WIDTH,
             &HEIGHT,
         );
+
+        let jitter_size = 2.0
+            * scene.cameras[0].apeture_size
+            * (1.0 - 1.0 / (scene.cameras[0].focus_distance - 1.0));
 
         if movement.moving {
             // Only need to sort spheres if camera has moved

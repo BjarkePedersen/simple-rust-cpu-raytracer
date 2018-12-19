@@ -71,6 +71,10 @@ pub fn handle_movement(
                 | Key::L
                 | Key::I
                 | Key::M => {
+                    println!(
+                        "{:}, {:}",
+                        scene.cameras[0].apeture_size, scene.cameras[0].focus_distance
+                    );
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     render.sample_iter = 0;
 
@@ -91,11 +95,23 @@ pub fn handle_movement(
     // Mouse movement
     window.get_unscaled_mouse_pos(MouseMode::Pass).map(|mouse| {
         if *mouse_movement != Vector3::new(mouse.0 / 100 as f32, mouse.1 / 100 as f32, 0.0) {
-            mouse_movement.x = mouse.0 / 100 as f32;
-            mouse_movement.y = mouse.1 / 100 as f32;
+            let mouse_delta = vec![
+                mouse_movement.x - mouse.0 / 100.0,
+                mouse_movement.y - mouse.1 / 100.0,
+            ];
 
-            scene.cameras[0].rot.z = -mouse_movement.x;
-            scene.cameras[0].rot.x = -mouse_movement.y;
+            scene.cameras[0].rot.z -= mouse_delta[0];
+            scene.cameras[0].rot.x += mouse_delta[1];
+
+            // Constrain vertical rotation.
+            if scene.cameras[0].rot.x > std::f32::consts::PI / 2.0 {
+                scene.cameras[0].rot.x = std::f32::consts::PI / 2.0;
+            } else if scene.cameras[0].rot.x < std::f32::consts::PI / -2.0 {
+                scene.cameras[0].rot.x = std::f32::consts::PI / -2.0
+            }
+
+            mouse_movement.x = mouse.0 / 100.0;
+            mouse_movement.y = mouse.1 / 100.0;
 
             *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
                 * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
