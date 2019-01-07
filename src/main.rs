@@ -1,18 +1,12 @@
-extern crate cgmath;
-extern crate minifb;
-extern crate ordered_float;
-extern crate rand;
-extern crate rayon;
-extern crate rgb;
-extern crate time;
-
-use helpers::*;
-use movement::*;
-use rays::intersect_sphere;
-use scene::*;
-use viewport::*;
+use crate::bresenham::*;
+use crate::helpers::*;
+use crate::movement::*;
+use crate::rays::intersect_sphere;
+use crate::scene::*;
+use crate::viewport::*;
 
 mod app_time;
+mod bresenham;
 mod helpers;
 mod movement;
 mod rays;
@@ -27,7 +21,7 @@ use rayon::prelude::*;
 
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
-const FOV: f32 = 90.0;
+// const FOV: f32 = 90.0;
 const PIXEL_SIZE: f32 = 1.0 / WIDTH as f32;
 
 fn main() {
@@ -48,7 +42,7 @@ fn main() {
         },
     };
 
-    let uv_size = 2.0 * (rad(FOV) / 2.0).tan();
+    let uv_size = 2.0 * (rad(scene.cameras[0].fov / 2.0)).tan();
 
     let mut sorted_spheres = scene.spheres.clone();
     sorted_spheres.sort_by_key(|k| {
@@ -63,6 +57,22 @@ fn main() {
         mouse_movement: Vector3::new(0.0, 0.0, 0.0),
         moving: false,
     };
+
+    let mut line1 = Line3d::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(2.0, 0.0, 0.0),
+        Col::new(1.0, 0.0, 0.0),
+    );
+    let mut line2 = Line3d::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(0.0, 2.0, 0.0),
+        Col::new(0.0, 1.0, 0.0),
+    );
+    let mut line3 = Line3d::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(0.0, 0.0, 2.0),
+        Col::new(0.2, 0.5, 1.0),
+    );
 
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
@@ -80,7 +90,7 @@ fn main() {
 
         handle_movement(
             &mut window,
-            &mut scene,
+            &mut scene.cameras[0],
             &mut rgb_buffer,
             &mut viewport,
             &mut movement.camera_movement,
@@ -203,6 +213,24 @@ fn main() {
 
             *col_2 = col_to_rgb_u32(col);
         }
+        // Draw lines
+        // let col = Col::new(1.0, 1.0, 1.0);
+        for (x, y) in line1.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
+            let col = col_to_rgb_u32(line1.color);
+
+            buffer[WIDTH * y as usize + x as usize] = col;
+        }
+        for (x, y) in line2.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
+            let col = col_to_rgb_u32(line2.color);
+
+            buffer[WIDTH * y as usize + x as usize] = col;
+        }
+        for (x, y) in line3.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
+            let col = col_to_rgb_u32(line3.color);
+
+            buffer[WIDTH * y as usize + x as usize] = col;
+        }
+
         window.update_with_buffer(&buffer).unwrap();
     }
 }

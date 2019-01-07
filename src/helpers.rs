@@ -1,10 +1,10 @@
+use crate::WIDTH;
 use cgmath::Vector3;
 use std::f32;
 use std::ops::Add;
 use std::ops::Div;
 use std::ops::Mul;
 use std::ops::Sub;
-use WIDTH;
 
 pub struct UV {
     pub x: f32,
@@ -132,7 +132,7 @@ pub fn rad(deg: f32) -> f32 {
     deg * f32::consts::PI / 180.0
 }
 
-pub fn clamp(min: f32, max: f32, val: f32) -> f32 {
+pub fn clamp<T: PartialOrd>(min: T, max: T, val: T) -> T {
     if val < min {
         min
     } else if val > max {
@@ -142,7 +142,7 @@ pub fn clamp(min: f32, max: f32, val: f32) -> f32 {
     }
 }
 
-pub fn clamp_min(min: f32, val: f32) -> f32 {
+pub fn clamp_min<T: PartialOrd>(min: T, val: T) -> T {
     if val < min {
         min
     } else {

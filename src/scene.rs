@@ -1,5 +1,5 @@
+use crate::helpers::Col;
 use cgmath::Vector3;
-use helpers::Col;
 
 use rand::prelude::*;
 
@@ -7,6 +7,7 @@ use rand::prelude::*;
 pub struct Camera {
     pub pos: Vector3<f32>,
     pub rot: Vector3<f32>,
+    pub fov: f32,
     pub focal_length: f32,
     pub sensor_size: f32,
     pub focus_distance: f32,
@@ -66,7 +67,7 @@ pub fn initialize_scene() -> Scene {
             pos: Vector3::new(0.0, 0.0, 0.0),
             radius: 2.0,
             material: Material {
-                color: Col::new(1.0, 0.2, 0.2),
+                color: Col::new(0.1, 0.1, 0.1),
             },
         },
     ];
@@ -93,6 +94,7 @@ pub fn initialize_scene() -> Scene {
         cameras: vec![Camera {
             pos: Vector3::new(0.0, -5.0, 0.0),
             rot: Vector3::new(0.0, 0.0, 0.0),
+            fov: 90.0,
             focal_length: 0.35,
             sensor_size: 1.0,
             focus_distance: 5.0,

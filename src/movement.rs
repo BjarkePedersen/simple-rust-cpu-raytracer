@@ -1,8 +1,8 @@
+use crate::helpers::Col;
+use crate::scene::Camera;
+use crate::viewport::Viewport;
 use cgmath::{Matrix4, Vector3};
-use helpers::Col;
 use minifb::{Key, MouseMode};
-use scene::Scene;
-use viewport::Viewport;
 
 pub struct Movement {
     pub camera_movement: Vector3<f32>,
@@ -12,7 +12,7 @@ pub struct Movement {
 
 pub fn handle_movement(
     window: &mut minifb::Window,
-    scene: &mut Scene,
+    camera: &mut Camera,
     rgb_buffer: &mut Vec<(Col)>,
     render: &mut Viewport,
     camera_movement: &mut Vector3<f32>,
@@ -34,23 +34,23 @@ pub fn handle_movement(
                 Key::D => camera_movement.x -= MOVE_SPEED,
                 Key::Space => camera_movement.z += MOVE_SPEED,
                 Key::LeftShift => camera_movement.z -= MOVE_SPEED,
-                Key::Left => scene.cameras[0].rot.z -= ROT_SPEED,
-                Key::Right => scene.cameras[0].rot.z += ROT_SPEED,
-                Key::Up => scene.cameras[0].rot.x += ROT_SPEED,
-                Key::Down => scene.cameras[0].rot.x -= ROT_SPEED,
-                Key::Q => scene.cameras[0].rot.y += ROT_SPEED,
-                Key::E => scene.cameras[0].rot.y -= ROT_SPEED,
-                Key::J => scene.cameras[0].focus_distance -= 0.1,
-                Key::L => scene.cameras[0].focus_distance += 0.1,
-                Key::M => scene.cameras[0].apeture_size -= 10.0,
-                Key::I => scene.cameras[0].apeture_size += 10.0,
+                Key::Left => camera.rot.z -= ROT_SPEED,
+                Key::Right => camera.rot.z += ROT_SPEED,
+                Key::Up => camera.rot.x += ROT_SPEED,
+                Key::Down => camera.rot.x -= ROT_SPEED,
+                Key::Q => camera.rot.y += ROT_SPEED,
+                Key::E => camera.rot.y -= ROT_SPEED,
+                Key::J => camera.focus_distance -= 0.1,
+                Key::L => camera.focus_distance += 0.1,
+                Key::M => camera.apeture_size -= 10.0,
+                Key::I => camera.apeture_size += 10.0,
                 _ => (),
             };
             match t {
                 Key::Left | Key::Right | Key::Up | Key::Down | Key::Q | Key::E => {
-                    *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
-                        * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
-                        * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
+                    *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(camera.rot.z))
+                        * cgmath::Matrix4::from_angle_y(cgmath::Rad(camera.rot.y))
+                        * cgmath::Matrix4::from_angle_x(cgmath::Rad(camera.rot.x));
                 }
                 _ => (),
             };
@@ -71,16 +71,12 @@ pub fn handle_movement(
                 | Key::L
                 | Key::I
                 | Key::M => {
-                    println!(
-                        "{:}, {:}",
-                        scene.cameras[0].apeture_size, scene.cameras[0].focus_distance
-                    );
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     render.sample_iter = 0;
 
                     let pos = *rot * camera_movement.extend(0.0);
                     let pos = pos.truncate();
-                    scene.cameras[0].pos += pos;
+                    camera.pos += pos;
                 }
                 Key::Enter => {
                     render.distance_pass = !render.distance_pass;
@@ -100,22 +96,22 @@ pub fn handle_movement(
                 mouse_movement.y - mouse.1 / 100.0,
             ];
 
-            scene.cameras[0].rot.z -= mouse_delta[0];
-            scene.cameras[0].rot.x += mouse_delta[1];
+            camera.rot.z -= mouse_delta[0];
+            camera.rot.x += mouse_delta[1];
 
             // Constrain vertical rotation.
-            if scene.cameras[0].rot.x > std::f32::consts::PI / 2.0 {
-                scene.cameras[0].rot.x = std::f32::consts::PI / 2.0;
-            } else if scene.cameras[0].rot.x < std::f32::consts::PI / -2.0 {
-                scene.cameras[0].rot.x = std::f32::consts::PI / -2.0
+            if camera.rot.x > std::f32::consts::PI / 2.0 {
+                camera.rot.x = std::f32::consts::PI / 2.0;
+            } else if camera.rot.x < std::f32::consts::PI / -2.0 {
+                camera.rot.x = std::f32::consts::PI / -2.0
             }
 
             mouse_movement.x = mouse.0 / 100.0;
             mouse_movement.y = mouse.1 / 100.0;
 
-            *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(scene.cameras[0].rot.z))
-                * cgmath::Matrix4::from_angle_y(cgmath::Rad(scene.cameras[0].rot.y))
-                * cgmath::Matrix4::from_angle_x(cgmath::Rad(scene.cameras[0].rot.x));
+            *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(camera.rot.z))
+                * cgmath::Matrix4::from_angle_y(cgmath::Rad(camera.rot.y))
+                * cgmath::Matrix4::from_angle_x(cgmath::Rad(camera.rot.x));
 
             *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
             render.sample_iter = 0;

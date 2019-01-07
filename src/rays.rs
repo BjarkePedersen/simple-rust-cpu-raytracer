@@ -1,7 +1,7 @@
+use crate::scene::Ray;
+use crate::Sphere;
 use cgmath::InnerSpace;
-use cgmath::Vector3;
-use scene::Ray;
-use Sphere;
+use cgmath::{Matrix4, Vector3};
 
 pub fn intersect_sphere(ray: &Ray, sphere: &Sphere) -> Option<(Vector3<f32>)> {
     let o = ray.pos;
