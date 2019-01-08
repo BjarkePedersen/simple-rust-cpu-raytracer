@@ -6,7 +6,7 @@ use std::ops::Div;
 use std::ops::Mul;
 use std::ops::Sub;
 
-pub fn clamp<T: PartialOrd>(min: T, max: T, val: T) -> T {
+pub fn clamp<T: PartialOrd>(val: T, min: T, max: T) -> T {
     if val < min {
         min
     } else if val > max {
@@ -16,7 +16,7 @@ pub fn clamp<T: PartialOrd>(min: T, max: T, val: T) -> T {
     }
 }
 
-pub fn clamp_min<T: PartialOrd>(min: T, val: T) -> T {
+pub fn clamp_min<T: PartialOrd>(val: T, min: T) -> T {
     if val < min {
         min
     } else {

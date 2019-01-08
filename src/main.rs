@@ -46,8 +46,8 @@ fn main() {
     let mut sorted_spheres = scene.spheres.clone();
     sorted_spheres.sort_by_key(|k| {
         OrderedFloat(clamp_min(
-            0.0,
             distance(scene.cameras[0].pos, k.pos) - k.radius,
+            0.0,
         ))
     });
 
@@ -85,16 +85,15 @@ fn main() {
             &HEIGHT,
         );
 
-        let jitter_size = 2.0
-            * scene.cameras[0].apeture_size
-            * (1.0 - 1.0 / (scene.cameras[0].focus_distance - 1.0));
+        let jitter_size =
+            2.0 * scene.cameras[0].apeture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance));
 
         if movement.moving {
             // Only need to sort spheres if camera has moved
             sorted_spheres.sort_by_key(|k| {
                 OrderedFloat(clamp_min(
-                    0.0,
                     distance(scene.cameras[0].pos, k.pos) - k.radius,
+                    0.0,
                 ))
             });
         }
@@ -140,7 +139,6 @@ fn main() {
                 let ray = Ray {
                     pos: apeture_jitter + scene.cameras[0].pos + aliasing_jitter,
                     dir: line.normalize(),
-                    // dir: (line - apeture_jitter + aliasing_jitter).normalize(),
                 };
 
                 let sky_col = mix_col(
@@ -168,10 +166,11 @@ fn main() {
                             closest_ray = distance;
                             if !viewport.distance_pass {
                                 // col = sphere.material.color;
+                                // Fog
                                 col = mix_col(
                                     sphere.material.color,
                                     sky_col,
-                                    clamp(0.0, 1.0, 1.0 / (distance / 20.0)),
+                                    clamp(1.0 / (distance / 20.0), 0.0, 1.0),
                                 );
                             } else {
                                 col = Col::new(distance / 20.0, distance / 20.0, distance / 20.0)
@@ -183,6 +182,9 @@ fn main() {
                 // Sky color
                 if !intersected {
                     col = sky_col;
+                }
+                if i == WIDTH * HEIGHT / 2 - WIDTH / 2 {
+                    col = Col::new(0.0, 0.0, 0.0)
                 }
                 pixel.r += col.r.powf(2.0);
                 pixel.g += col.g.powf(2.0);

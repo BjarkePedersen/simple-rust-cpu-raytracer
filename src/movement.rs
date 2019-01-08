@@ -1,4 +1,4 @@
-use crate::helpers::Col;
+use crate::helpers::{clamp_min, Col};
 use crate::scene::Camera;
 use crate::viewport::Viewport;
 use cgmath::{Matrix4, Vector3};
@@ -76,6 +76,7 @@ pub fn handle_movement(
                     let pos = *rot * movement.camera_movement.extend(0.0);
                     let pos = pos.truncate();
                     camera.pos += pos;
+                    camera.focus_distance = clamp_min(camera.focus_distance, 0.0);
                 }
                 Key::Enter => {
                     if !keys_down.contains(&key) {

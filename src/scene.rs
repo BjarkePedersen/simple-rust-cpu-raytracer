@@ -92,7 +92,7 @@ pub fn initialize_scene() -> Scene {
             focal_length: 0.35,
             sensor_size: 1.0,
             focus_distance: 5.0,
-            apeture_size: 100.0,
+            apeture_size: 20.0,
         }],
         spheres: vec![],
         sky: Sky {
