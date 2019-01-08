@@ -1,4 +1,3 @@
-use crate::bresenham::*;
 use crate::helpers::*;
 use crate::movement::*;
 use crate::rays::intersect_sphere;
@@ -57,22 +56,6 @@ fn main() {
         mouse_movement: Vector3::new(0.0, 0.0, 0.0),
         moving: false,
     };
-
-    let mut line1 = Line3d::new(
-        Vector3::new(0.0, 0.0, 0.0),
-        Vector3::new(2.0, 0.0, 0.0),
-        Col::new(1.0, 0.0, 0.0),
-    );
-    let mut line2 = Line3d::new(
-        Vector3::new(0.0, 0.0, 0.0),
-        Vector3::new(0.0, 2.0, 0.0),
-        Col::new(0.0, 1.0, 0.0),
-    );
-    let mut line3 = Line3d::new(
-        Vector3::new(0.0, 0.0, 0.0),
-        Vector3::new(0.0, 0.0, 2.0),
-        Col::new(0.2, 0.5, 1.0),
-    );
 
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
@@ -138,7 +121,7 @@ fn main() {
                     let uv = uv(WIDTH * HEIGHT - i - 1);
 
                     Vector3::new(
-                        ((uv.x - WIDTH as f32 / 2.0) / HEIGHT as f32) * uv_size
+                        ((uv.x - WIDTH as f32 / 2.0) / HEIGHT as f32) * -uv_size
                             + jitter_x * jitter_size,
                         1.0,
                         ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * uv_size
@@ -213,22 +196,9 @@ fn main() {
 
             *col_2 = col_to_rgb_u32(col);
         }
-        // Draw lines
-        // let col = Col::new(1.0, 1.0, 1.0);
-        for (x, y) in line1.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
-            let col = col_to_rgb_u32(line1.color);
 
-            buffer[WIDTH * y as usize + x as usize] = col;
-        }
-        for (x, y) in line2.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
-            let col = col_to_rgb_u32(line2.color);
-
-            buffer[WIDTH * y as usize + x as usize] = col;
-        }
-        for (x, y) in line3.render_line(&scene.cameras[0], &WIDTH, &HEIGHT) {
-            let col = col_to_rgb_u32(line3.color);
-
-            buffer[WIDTH * y as usize + x as usize] = col;
+        for wireframe in &mut scene.wireframes {
+            wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH);
         }
 
         window.update_with_buffer(&buffer).unwrap();

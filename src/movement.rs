@@ -30,12 +30,12 @@ pub fn handle_movement(
             match t {
                 Key::W => camera_movement.y += MOVE_SPEED,
                 Key::S => camera_movement.y -= MOVE_SPEED,
-                Key::A => camera_movement.x += MOVE_SPEED,
-                Key::D => camera_movement.x -= MOVE_SPEED,
+                Key::A => camera_movement.x -= MOVE_SPEED,
+                Key::D => camera_movement.x += MOVE_SPEED,
                 Key::Space => camera_movement.z += MOVE_SPEED,
                 Key::LeftShift => camera_movement.z -= MOVE_SPEED,
-                Key::Left => camera.rot.z -= ROT_SPEED,
-                Key::Right => camera.rot.z += ROT_SPEED,
+                Key::Left => camera.rot.z += ROT_SPEED,
+                Key::Right => camera.rot.z -= ROT_SPEED,
                 Key::Up => camera.rot.x += ROT_SPEED,
                 Key::Down => camera.rot.x -= ROT_SPEED,
                 Key::Q => camera.rot.y += ROT_SPEED,
@@ -92,7 +92,7 @@ pub fn handle_movement(
     window.get_unscaled_mouse_pos(MouseMode::Pass).map(|mouse| {
         if *mouse_movement != Vector3::new(mouse.0 / 100 as f32, mouse.1 / 100 as f32, 0.0) {
             let mouse_delta = vec![
-                mouse_movement.x - mouse.0 / 100.0,
+                -mouse_movement.x + mouse.0 / 100.0,
                 mouse_movement.y - mouse.1 / 100.0,
             ];
 

@@ -23,6 +23,8 @@ impl Line2d {
         let p1 = Vector2::new(self.x0 as f32, self.y0 as f32);
         let p2 = Vector2::new(self.x1 as f32, self.y1 as f32);
 
+        // Clamp p1
+
         let r = p2 - p1;
         let t = if p2.x < 0.0 {
             -p1.x / r.x
@@ -42,6 +44,8 @@ impl Line2d {
             1.0
         };
         let p2 = p1 + r * t;
+
+        // Clamp p2
 
         let r = p1 - p2;
         let t = if p1.x < 0.0 {
@@ -133,6 +137,7 @@ fn plot_line(
         })
 }
 
+#[derive(Debug, Clone)]
 pub struct Line3d {
     pub p1: Vector3<f32>,
     pub p2: Vector3<f32>,
