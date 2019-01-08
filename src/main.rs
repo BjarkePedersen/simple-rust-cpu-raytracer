@@ -126,7 +126,8 @@ fn main() {
                         1.0,
                         ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * uv_size
                             + jitter_z * jitter_size,
-                    )
+                    ) - apeture_jitter
+                        + aliasing_jitter
                 };
 
                 let ray1_mat4 = rot * line.extend(0.0);
@@ -137,7 +138,8 @@ fn main() {
 
                 let ray = Ray {
                     pos: apeture_jitter + scene.cameras[0].pos + aliasing_jitter,
-                    dir: (line - apeture_jitter + aliasing_jitter).normalize(),
+                    dir: line.normalize(),
+                    // dir: (line - apeture_jitter + aliasing_jitter).normalize(),
                 };
 
                 let sky_col = mix_col(
