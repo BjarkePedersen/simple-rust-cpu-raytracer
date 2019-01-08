@@ -19,7 +19,7 @@ impl Line2d {
         }
     }
 
-    pub fn clamp(&self, width: usize, height: usize) -> Option<Line2d> {
+    pub fn clamp(&self, display_width: usize, display_height: usize) -> Option<Line2d> {
         let p1 = Vector2::new(self.x0 as f32, self.y0 as f32);
         let p2 = Vector2::new(self.x1 as f32, self.y1 as f32);
 
@@ -28,8 +28,8 @@ impl Line2d {
         let r = p2 - p1;
         let t = if p2.x < 0.0 {
             -p1.x / r.x
-        } else if p2.x > width as f32 {
-            (width as f32 - p1.x) / r.x
+        } else if p2.x > display_width as f32 {
+            (display_width as f32 - p1.x) / r.x
         } else {
             1.0
         };
@@ -38,8 +38,8 @@ impl Line2d {
         let r = p2 - p1;
         let t = if p2.y < 0.0 {
             -p1.y / r.y
-        } else if p2.y > height as f32 {
-            (height as f32 - p1.y) / r.y
+        } else if p2.y > display_height as f32 {
+            (display_height as f32 - p1.y) / r.y
         } else {
             1.0
         };
@@ -50,8 +50,8 @@ impl Line2d {
         let r = p1 - p2;
         let t = if p1.x < 0.0 {
             -p2.x / r.x
-        } else if p1.x > width as f32 {
-            (width as f32 - p2.x) / r.x
+        } else if p1.x > display_width as f32 {
+            (display_width as f32 - p2.x) / r.x
         } else {
             1.0
         };
@@ -60,8 +60,8 @@ impl Line2d {
         let r = p1 - p2;
         let t = if p1.y < 0.0 {
             -p2.y / r.y
-        } else if p1.y > height as f32 {
-            (height as f32 - p2.y) / r.y
+        } else if p1.y > display_height as f32 {
+            (display_height as f32 - p2.y) / r.y
         } else {
             1.0
         };
@@ -82,8 +82,8 @@ impl Line2d {
 
 fn plot_line(
     line: Line2d,
-    width: &'static usize,
-    height: &'static usize,
+    display_width: &'static usize,
+    display_height: &'static usize,
 ) -> impl Iterator<Item = (i32, i32)> {
     let x0 = line.x0;
     let y0 = line.y0;
@@ -127,7 +127,9 @@ fn plot_line(
         }
     };
     coordinates
-        .filter(move |(x, y)| *x < (*width as i32) && *x > 0 && *y < (*height as i32) && *y > 0)
+        .filter(move |(x, y)| {
+            *x < (*display_width as i32) && *x > 0 && *y < (*display_height as i32) && *y > 0
+        })
         .map(move |(x, y)| {
             if (y1 - y0).abs() < (x1 - x0).abs() {
                 (x, y)
@@ -156,8 +158,8 @@ impl Line3d {
     pub fn render_line(
         &self,
         camera: &Camera,
-        width: &'static usize,
-        height: &'static usize,
+        display_width: &'static usize,
+        display_height: &'static usize,
     ) -> impl Iterator<Item = (i32, i32)> {
         let matrix: Matrix4<f32> = cgmath::PerspectiveFov {
             fovy: cgmath::Rad(camera.fov * std::f32::consts::PI / 180.0),
@@ -187,20 +189,20 @@ impl Line3d {
 
         // println!("{:?} {:?}", coord1, coord2);
 
-        let half_height = *height as f32 / -2.0;
-        let half_width = *width as i32 / 2;
+        let half_display_height = *display_height as f32 / -2.0;
+        let half_display_width = *display_width as i32 / 2;
 
         let line = Line2d::new(
-            (half_height * coord1.x / coord1.w) as i32 + half_width,
-            (half_height * coord1.y / coord1.w) as i32 + -half_height as i32,
-            (half_height * coord2.x / coord2.w) as i32 + half_width,
-            (half_height * coord2.y / coord2.w) as i32 + -half_height as i32,
+            (half_display_height * coord1.x / coord1.w) as i32 + half_display_width,
+            (half_display_height * coord1.y / coord1.w) as i32 + -half_display_height as i32,
+            (half_display_height * coord2.x / coord2.w) as i32 + half_display_width,
+            (half_display_height * coord2.y / coord2.w) as i32 + -half_display_height as i32,
         )
-        .clamp(*width, *height);
+        .clamp(*display_width, *display_height);
 
         if coord1.w > 0.0 && coord2.w > 0.0 {
             if let Some(line) = line {
-                either::Right(plot_line(line, width, height))
+                either::Right(plot_line(line, display_width, display_height))
             } else {
                 either::Left(std::iter::empty())
             }

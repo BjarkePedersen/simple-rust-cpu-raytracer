@@ -6,6 +6,24 @@ use std::ops::Div;
 use std::ops::Mul;
 use std::ops::Sub;
 
+pub fn clamp<T: PartialOrd>(min: T, max: T, val: T) -> T {
+    if val < min {
+        min
+    } else if val > max {
+        max
+    } else {
+        val
+    }
+}
+
+pub fn clamp_min<T: PartialOrd>(min: T, val: T) -> T {
+    if val < min {
+        min
+    } else {
+        val
+    }
+}
+
 pub struct UV {
     pub x: f32,
     pub y: f32,
@@ -21,6 +39,14 @@ pub struct Col {
 impl Col {
     pub fn new(r: f32, g: f32, b: f32) -> Col {
         Col { r: r, g: g, b: b }
+    }
+
+    pub fn clamp(&self, min: f32, max: f32) -> Col {
+        Col {
+            r: clamp(min, max, self.r),
+            g: clamp(min, max, self.r),
+            b: clamp(min, max, self.r),
+        }
     }
 }
 
@@ -130,22 +156,4 @@ pub fn distance(vec1: Vector3<f32>, vec2: Vector3<f32>) -> f32 {
 
 pub fn rad(deg: f32) -> f32 {
     deg * f32::consts::PI / 180.0
-}
-
-pub fn clamp<T: PartialOrd>(min: T, max: T, val: T) -> T {
-    if val < min {
-        min
-    } else if val > max {
-        max
-    } else {
-        val
-    }
-}
-
-pub fn clamp_min<T: PartialOrd>(min: T, val: T) -> T {
-    if val < min {
-        min
-    } else {
-        val
-    }
 }

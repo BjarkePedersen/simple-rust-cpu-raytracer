@@ -56,14 +56,20 @@ impl Wireframe {
         Wireframe { lines: lines }
     }
 
-    pub fn render(&self, buffer: &mut Vec<u32>, camera: &Camera, width: &'static usize) {
-        for line in &self.lines {
-            for (x, y) in line.render_line(camera, width, width) {
+    pub fn render(
+        &self,
+        buffer: &mut Vec<u32>,
+        camera: &Camera,
+        display_width: &'static usize,
+        display_height: &'static usize,
+    ) {
+        &self.lines.iter().for_each(|line| {
+            for (x, y) in line.render_line(camera, display_width, display_height) {
                 let col = col_to_rgb_u32(line.color);
 
-                buffer[width * y as usize + (width - x as usize)] = col;
+                buffer[display_width * y as usize + (display_width - x as usize)] = col;
             }
-        }
+        });
     }
 }
 
@@ -102,7 +108,7 @@ pub fn initialize_scene() -> Scene {
 
     let mut spheres = vec![
         Sphere {
-            pos: Vector3::new(0.0, 0.0, 0.0),
+            pos: Vector3::new(3.0, 2.0, 1.0),
             radius: 1.0,
             material: Material {
                 color: Col::new(0.1, 0.1, 0.1),
@@ -213,8 +219,9 @@ pub fn initialize_scene() -> Scene {
                 (t1 as f32 / v_iter * std::f32::consts::PI).cos() * radius,
             );
 
-            let line1 = Line3d::new(line1_p1, line1_p2, col);
-            let line2 = Line3d::new(line2_p1, line2_p2, col);
+            let pos = scene.spheres[0].pos;
+            let line1 = Line3d::new(line1_p1 + pos, line1_p2 + pos, col);
+            let line2 = Line3d::new(line2_p1 + pos, line2_p2 + pos, col);
             sphere_test.lines.push(line1);
             sphere_test.lines.push(line2);
         }

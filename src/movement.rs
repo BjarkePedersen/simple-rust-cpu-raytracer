@@ -15,10 +15,9 @@ pub fn handle_movement(
     camera: &mut Camera,
     rgb_buffer: &mut Vec<(Col)>,
     render: &mut Viewport,
-    camera_movement: &mut Vector3<f32>,
-    mouse_movement: &mut Vector3<f32>,
-    moving: &mut bool,
+    movement: &mut Movement,
     rot: &mut Matrix4<f32>,
+    keys_down: &mut Vec<Key>,
     display_width: &usize,
     display_height: &usize,
 ) {
@@ -26,12 +25,12 @@ pub fn handle_movement(
     const ROT_SPEED: f32 = 0.1;
 
     window.get_keys().map(|keys| {
-        for t in keys {
-            match t {
-                Key::W => camera_movement.y += MOVE_SPEED,
-                Key::S => camera_movement.y -= MOVE_SPEED,
-                Key::A => camera_movement.x -= MOVE_SPEED,
-                Key::D => camera_movement.x += MOVE_SPEED,
+        for key in keys {
+            match key {
+                Key::W => movement.camera_movement.y += MOVE_SPEED,
+                Key::S => movement.camera_movement.y -= MOVE_SPEED,
+                Key::A => movement.camera_movement.x -= MOVE_SPEED,
+                Key::D => movement.camera_movement.x += MOVE_SPEED,
                 Key::Space => camera.pos.z += MOVE_SPEED,
                 Key::LeftShift => camera.pos.z -= MOVE_SPEED,
                 Key::Left => camera.rot.z += ROT_SPEED,
@@ -46,7 +45,7 @@ pub fn handle_movement(
                 Key::I => camera.apeture_size += 10.0,
                 _ => (),
             };
-            match t {
+            match key {
                 Key::Left | Key::Right | Key::Up | Key::Down | Key::Q | Key::E => {
                     *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(camera.rot.z))
                         * cgmath::Matrix4::from_angle_y(cgmath::Rad(camera.rot.y))
@@ -54,7 +53,7 @@ pub fn handle_movement(
                 }
                 _ => (),
             };
-            match t {
+            match key {
                 Key::W
                 | Key::S
                 | Key::A
@@ -74,26 +73,35 @@ pub fn handle_movement(
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     render.sample_iter = 0;
 
-                    let pos = *rot * camera_movement.extend(0.0);
+                    let pos = *rot * movement.camera_movement.extend(0.0);
                     let pos = pos.truncate();
                     camera.pos += pos;
                 }
                 Key::Enter => {
-                    render.distance_pass = !render.distance_pass;
-                    *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
-                    render.sample_iter = 0;
+                    if !keys_down.contains(&key) {
+                        render.distance_pass = !render.distance_pass;
+                        *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
+                        render.sample_iter = 0;
+                    }
                 }
                 _ => (),
             };
         }
     });
 
+    // Reset keys_down
+    *keys_down = vec![];
+    window.get_keys().map(|keys| {
+        keys.iter().for_each(|key| keys_down.push(*key));
+    });
+
     // Mouse movement
     window.get_unscaled_mouse_pos(MouseMode::Pass).map(|mouse| {
-        if *mouse_movement != Vector3::new(mouse.0 / 100 as f32, mouse.1 / 100 as f32, 0.0) {
+        if movement.mouse_movement != Vector3::new(mouse.0 / 100 as f32, mouse.1 / 100 as f32, 0.0)
+        {
             let mouse_delta = vec![
-                -mouse_movement.x + mouse.0 / 100.0,
-                mouse_movement.y - mouse.1 / 100.0,
+                -movement.mouse_movement.x + mouse.0 / 100.0,
+                movement.mouse_movement.y - mouse.1 / 100.0,
             ];
 
             camera.rot.z -= mouse_delta[0];
@@ -106,8 +114,8 @@ pub fn handle_movement(
                 camera.rot.x = std::f32::consts::PI / -2.0
             }
 
-            mouse_movement.x = mouse.0 / 100.0;
-            mouse_movement.y = mouse.1 / 100.0;
+            movement.mouse_movement.x = mouse.0 / 100.0;
+            movement.mouse_movement.y = mouse.1 / 100.0;
 
             *rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(camera.rot.z))
                 * cgmath::Matrix4::from_angle_y(cgmath::Rad(camera.rot.y))
@@ -116,17 +124,17 @@ pub fn handle_movement(
             *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
             render.sample_iter = 0;
 
-            *moving = true;
+            movement.moving = true;
         } else {
-            *moving = false;
+            movement.moving = false;
         }
     });
 
-    if *camera_movement == Vector3::new(0.0, 0.0, 0.0) {
-        *moving = false;
+    if movement.camera_movement == Vector3::new(0.0, 0.0, 0.0) {
+        movement.moving = false;
     } else {
-        *moving = true;
+        movement.moving = true;
     }
 
-    *camera_movement = Vector3::new(0.0, 0.0, 0.0);
+    movement.camera_movement = Vector3::new(0.0, 0.0, 0.0);
 }

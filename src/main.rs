@@ -57,6 +57,8 @@ fn main() {
         moving: false,
     };
 
+    let mut keys_down: Vec<Key> = vec![];
+
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
         app_time::update_time(
@@ -76,10 +78,9 @@ fn main() {
             &mut scene.cameras[0],
             &mut rgb_buffer,
             &mut viewport,
-            &mut movement.camera_movement,
-            &mut movement.mouse_movement,
-            &mut movement.moving,
+            &mut movement,
             &mut rot,
+            &mut keys_down,
             &WIDTH,
             &HEIGHT,
         );
@@ -173,7 +174,8 @@ fn main() {
                                     clamp(0.0, 1.0, 1.0 / (distance / 20.0)),
                                 );
                             } else {
-                                col = Col::new(distance / 20.0, distance / 20.0, distance / 20.0);
+                                col = Col::new(distance / 20.0, distance / 20.0, distance / 20.0)
+                                    .clamp(0.0, 1.0);
                             }
                         }
                     }
@@ -200,7 +202,7 @@ fn main() {
         }
 
         for wireframe in &mut scene.wireframes {
-            wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH);
+            wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
         }
 
         window.update_with_buffer(&buffer).unwrap();
