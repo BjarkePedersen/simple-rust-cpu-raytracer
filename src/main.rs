@@ -86,7 +86,7 @@ fn main() {
         );
 
         let jitter_size =
-            2.0 * scene.cameras[0].apeture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance));
+            2.0 * scene.cameras[0].aperture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance));
 
         if movement.moving {
             // Only need to sort spheres if camera has moved
@@ -105,11 +105,15 @@ fn main() {
                 let mut rng = thread_rng();
                 let mut col = Col::new(1.0, 1.0, 1.0);
 
-                let jitter_x = rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0);
-                let jitter_z = rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0);
+                // let jitter_x = rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0);
+                // let jitter_z = rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0);
+                let jitter_angle = rng.gen_range(0.0, std::f32::consts::PI);
+                let jitter_length = rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0);
+                let jitter_x = jitter_angle.sin() * jitter_length;
+                let jitter_z = jitter_angle.cos() * jitter_length;
 
-                let apeture_jitter =
-                    Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].apeture_size;
+                let aperture_jitter =
+                    Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_size;
 
                 let aliasing_jitter = Vector3::new(
                     rng.gen_range(-PIXEL_SIZE / 2.0, PIXEL_SIZE / 2.0),
@@ -126,25 +130,25 @@ fn main() {
                         1.0,
                         ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * uv_size
                             + jitter_z * jitter_size,
-                    ) - apeture_jitter
+                    ) - aperture_jitter
                         + aliasing_jitter
                 };
 
                 let ray1_mat4 = rot * line.extend(0.0);
                 let line = ray1_mat4.truncate();
 
-                let apeture_jitter_mat4 = rot * apeture_jitter.extend(0.0);
-                let apeture_jitter = apeture_jitter_mat4.truncate();
+                let aperture_jitter_mat4 = rot * aperture_jitter.extend(0.0);
+                let aperture_jitter = aperture_jitter_mat4.truncate();
 
                 let ray = Ray {
-                    pos: apeture_jitter + scene.cameras[0].pos + aliasing_jitter,
+                    pos: aperture_jitter + scene.cameras[0].pos + aliasing_jitter,
                     dir: line.normalize(),
                 };
 
                 let sky_col = mix_col(
                     scene.sky.colors[0],
                     scene.sky.colors[1],
-                    1.0 / ((line.z - apeture_jitter.z).abs() + 1.0),
+                    1.0 / ((line.z - aperture_jitter.z).abs() + 1.0),
                 );
 
                 let mut intersected = false;
@@ -195,9 +199,9 @@ fn main() {
 
         for (col_1, col_2) in rgb_buffer.iter().zip(buffer.iter_mut()) {
             let col = Col::new(
-                (col_1.r / viewport.sample_iter as f32).sqrt(),
-                (col_1.g / viewport.sample_iter as f32).sqrt(),
-                (col_1.b / viewport.sample_iter as f32).sqrt(),
+                clamp_max((col_1.r / viewport.sample_iter as f32).sqrt(), 1.0),
+                clamp_max((col_1.g / viewport.sample_iter as f32).sqrt(), 1.0),
+                clamp_max((col_1.b / viewport.sample_iter as f32).sqrt(), 1.0),
             );
 
             *col_2 = col_to_rgb_u32(col);

@@ -24,6 +24,14 @@ pub fn clamp_min<T: PartialOrd>(val: T, min: T) -> T {
     }
 }
 
+pub fn clamp_max<T: PartialOrd>(val: T, max: T) -> T {
+    if val > max {
+        max
+    } else {
+        val
+    }
+}
+
 pub struct UV {
     pub x: f32,
     pub y: f32,
@@ -43,9 +51,9 @@ impl Col {
 
     pub fn clamp(&self, min: f32, max: f32) -> Col {
         Col {
-            r: clamp(min, max, self.r),
-            g: clamp(min, max, self.r),
-            b: clamp(min, max, self.r),
+            r: clamp(self.r, min, max),
+            g: clamp(self.r, min, max),
+            b: clamp(self.r, min, max),
         }
     }
 }

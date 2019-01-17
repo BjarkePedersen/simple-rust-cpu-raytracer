@@ -12,7 +12,7 @@ pub struct Camera {
     pub focal_length: f32,
     pub sensor_size: f32,
     pub focus_distance: f32,
-    pub apeture_size: f32,
+    pub aperture_size: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -92,7 +92,7 @@ pub fn initialize_scene() -> Scene {
             focal_length: 0.35,
             sensor_size: 1.0,
             focus_distance: 5.0,
-            apeture_size: 20.0,
+            aperture_size: 20.0,
         }],
         spheres: vec![],
         sky: Sky {
@@ -133,6 +133,13 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.1, 0.3, 1.0),
+            },
+        },
+        Sphere {
+            pos: Vector3::new(-2.0, 0.0, 2.0),
+            radius: 0.3,
+            material: Material {
+                color: Col::new(10.0, 10.0, 10.0),
             },
         },
     ];

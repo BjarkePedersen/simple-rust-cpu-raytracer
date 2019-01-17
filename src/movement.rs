@@ -41,8 +41,8 @@ pub fn handle_movement(
                 Key::E => camera.rot.y -= ROT_SPEED,
                 Key::J => camera.focus_distance -= 0.1,
                 Key::L => camera.focus_distance += 0.1,
-                Key::M => camera.apeture_size -= 10.0,
-                Key::I => camera.apeture_size += 10.0,
+                Key::M => camera.aperture_size -= 10.0,
+                Key::I => camera.aperture_size += 10.0,
                 _ => (),
             };
             match key {
