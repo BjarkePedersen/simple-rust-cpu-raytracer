@@ -147,10 +147,6 @@ pub fn rgb_u32(r: u32, g: u32, b: u32) -> u32 {
     ((rg << 8) | b)
 }
 
-// pub fn byte_to_rgb(hex: u32) -> (u8, u8, u8) {
-//     ((hex >> 16) as u8, (hex >> 8) as u8, hex as u8)
-// }
-
 pub fn uv(index: usize) -> UV {
     UV {
         x: (index % WIDTH as usize) as f32,

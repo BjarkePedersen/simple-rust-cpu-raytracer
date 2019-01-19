@@ -187,8 +187,6 @@ impl Line3d {
         let coord1 = matrix * dir * coord1;
         let coord2 = matrix * dir * coord2;
 
-        // println!("{:?} {:?}", coord1, coord2);
-
         let half_display_height = *display_height as f32 / -2.0;
         let half_display_width = *display_width as i32 / 2;
 

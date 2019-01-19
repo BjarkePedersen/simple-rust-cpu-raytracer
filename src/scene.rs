@@ -96,7 +96,7 @@ pub fn initialize_scene() -> Scene {
         }],
         spheres: vec![],
         sky: Sky {
-            colors: vec![Col::new(0.9, 0.875, 0.85), Col::new(0.078, 0.4, 1.0)],
+            colors: vec![Col::new(0.3, 0.6, 0.9), Col::new(0.9, 0.9, 0.9)],
             intensity: 1.0,
         },
         wireframes: vec![],

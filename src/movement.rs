@@ -1,6 +1,6 @@
+use crate::app::Viewport;
 use crate::helpers::{clamp_min, Col};
 use crate::scene::Camera;
-use crate::viewport::Viewport;
 use cgmath::{Matrix4, Vector3};
 use minifb::{Key, MouseMode};
 
@@ -31,14 +31,14 @@ pub fn handle_movement(
                 Key::S => movement.camera_movement.y -= MOVE_SPEED,
                 Key::A => movement.camera_movement.x -= MOVE_SPEED,
                 Key::D => movement.camera_movement.x += MOVE_SPEED,
-                Key::Space => camera.pos.z += MOVE_SPEED,
-                Key::LeftShift => camera.pos.z -= MOVE_SPEED,
+                Key::Space => movement.camera_movement.z += MOVE_SPEED,
+                Key::LeftShift => movement.camera_movement.z -= MOVE_SPEED,
                 Key::Left => camera.rot.z += ROT_SPEED,
                 Key::Right => camera.rot.z -= ROT_SPEED,
                 Key::Up => camera.rot.x += ROT_SPEED,
                 Key::Down => camera.rot.x -= ROT_SPEED,
-                Key::Q => camera.rot.y += ROT_SPEED,
-                Key::E => camera.rot.y -= ROT_SPEED,
+                // Key::Q => camera.rot.y += ROT_SPEED,
+                // Key::E => camera.rot.y -= ROT_SPEED,
                 Key::J => camera.focus_distance -= 0.1,
                 Key::L => camera.focus_distance += 0.1,
                 Key::M => camera.aperture_size -= 10.0,
