@@ -114,9 +114,9 @@ fn main() {
                     Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_size;
 
                 let aliasing_jitter = Vector3::new(
-                    rng.gen_range(-0.5, 0.5) * PIXEL_SIZE,
+                    rng.gen_range(-1.0, 1.0) * PIXEL_SIZE,
                     0.0,
-                    rng.gen_range(-0.5, 0.5) * PIXEL_SIZE,
+                    rng.gen_range(-1.0, 1.0) * PIXEL_SIZE,
                 );
 
                 let dir = {
