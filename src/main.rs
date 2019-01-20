@@ -3,6 +3,7 @@ use crate::helpers::*;
 use crate::intersect::*;
 use crate::movement::*;
 use crate::scene::*;
+use crate::sky_box::sky_box;
 
 mod app;
 mod bresenham;
@@ -10,6 +11,7 @@ mod helpers;
 mod intersect;
 mod movement;
 mod scene;
+mod sky_box;
 
 use cgmath::{InnerSpace, Vector3};
 use minifb::{Key, Window, WindowOptions};
@@ -104,9 +106,9 @@ fn main() {
                 let mut rng = thread_rng();
 
                 let jitter_angle = rng.gen_range(0.0, 1.0) * std::f32::consts::PI * 2.0;
-                let jitter_length = rng.gen_range(0.0, 1.0) * PIXEL_SIZE;
-                let jitter_x = jitter_angle.sin() * jitter_length;
-                let jitter_z = jitter_angle.cos() * jitter_length;
+                let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt() * PIXEL_SIZE;
+                let jitter_x = jitter_length * jitter_angle.cos();
+                let jitter_z = jitter_length * jitter_angle.sin();
 
                 let aperture_jitter =
                     Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_size;
@@ -142,12 +144,7 @@ fn main() {
                 };
 
                 // Sky color
-                let mut col = mix_col(scene.sky.colors[0], scene.sky.colors[1], ray.dir.z.abs());
-                col = mix_col(
-                    col,
-                    Col::new(0.3, 0.6, 0.4),
-                    if ray.dir.z > 0.0 { 1.0 } else { 0.0 },
-                );
+                let mut col = sky_box(&scene, &ray);
 
                 intersect_spheres(&scene, &viewport, &sorted_spheres, &ray, &mut col);
 

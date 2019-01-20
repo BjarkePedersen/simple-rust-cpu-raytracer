@@ -64,8 +64,8 @@ pub fn handle_movement(
                 | Key::Right
                 | Key::Up
                 | Key::Down
-                | Key::Q
-                | Key::E
+                // | Key::Q
+                // | Key::E
                 | Key::J
                 | Key::L
                 | Key::I
