@@ -39,8 +39,8 @@ pub fn handle_movement(
                 Key::Down => camera.rot.x -= ROT_SPEED,
                 // Key::Q => camera.rot.y += ROT_SPEED,
                 // Key::E => camera.rot.y -= ROT_SPEED,
-                Key::J => camera.focus_distance -= 0.1,
-                Key::L => camera.focus_distance += 0.1,
+                Key::J => camera.focus_distance *= 0.9,
+                Key::L => camera.focus_distance *= 1.0 / 0.9,
                 Key::M => camera.aperture_size -= 10.0,
                 Key::I => camera.aperture_size += 10.0,
                 _ => (),
@@ -70,6 +70,7 @@ pub fn handle_movement(
                 | Key::L
                 | Key::I
                 | Key::M => {
+                    println!("{}", camera.focus_distance);
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     render.sample_iter = 0;
 
