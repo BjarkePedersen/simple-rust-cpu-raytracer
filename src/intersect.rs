@@ -1,8 +1,8 @@
 use crate::app::Viewport;
 use crate::helpers::{clamp, distance, mix_col, Col};
 use crate::scene::{Ray, Scene, Sphere};
-use cgmath::InnerSpace;
-use cgmath::Vector3;
+use crate::sky_box::sky_box;
+use cgmath::{dot, InnerSpace, Vector3};
 
 pub trait Intersect {
     fn intersect(&self, ray: &Ray) -> Option<(Vector3<f32>)>;
@@ -35,40 +35,71 @@ impl Intersect for Sphere {
 }
 
 pub fn intersect_spheres(
+    max_bounces: i32,
+    bounce_count: i32,
     scene: &Scene,
     viewport: &Viewport,
-    sorted_spheres: &Vec<Sphere>,
+    spheres: &Vec<Sphere>,
     ray: &Ray,
-    col: &mut Col,
-) {
-    let mut closest_ray: f32 = std::f32::MAX;
-    let mut first_intersect_distance = std::f32::MAX;
+) -> Col {
+    let mut col = sky_box(scene, ray);
+    let mut closest_intersection: f32 = std::f32::MAX;
+    let mut bounce_point: Option<(Vector3<f32>)> = None;
+    let mut bounce_sphere: Option<&Sphere> = None;
 
-    for sphere in sorted_spheres {
+    for sphere in spheres {
         let intersect_point = sphere.intersect(ray);
         if let Some(intersect_point) = intersect_point {
             let distance = distance(scene.cameras[0].pos, intersect_point);
-            if distance < first_intersect_distance {
-                first_intersect_distance = distance
-            };
-            if distance - first_intersect_distance > sphere.radius {
-                break;
-            }
-            if distance < closest_ray {
-                closest_ray = distance;
+
+            if distance < closest_intersection {
+                closest_intersection = distance;
+
+                bounce_point = Some(intersect_point.clone());
+                bounce_sphere = Some(&sphere);
+
                 if !viewport.distance_pass {
-                    // col = sphere.material.color;
-                    // Fog
-                    *col = mix_col(
-                        sphere.material.color,
-                        *col,
-                        clamp(1.0 / (distance / 20.0), 0.0, 1.0),
-                    );
+                    col = Col::new(0.0, 0.0, 0.0);
                 } else {
-                    *col =
-                        Col::new(distance / 20.0, distance / 20.0, distance / 20.0).clamp(0.0, 1.0);
+                    let d = distance / 20.0;
+                    col = Col::new(d, d, d).clamp(0.0, 1.0);
                 }
             }
         }
     }
+
+    // Bounce:
+    // Make new ray from old ray, bounce_point, and bounce_sphere
+    // Recursively call intersect_spheres with new ray
+    if bounce_count < max_bounces {
+        if let Some(bounce_point) = bounce_point {
+            if let Some(bounce_sphere) = bounce_sphere {
+                // Normal at intersection point
+                let n = bounce_point - bounce_sphere.pos;
+
+                // Incoming ray vector
+                let d = ray.dir;
+
+                // Reflected vector
+                let dir = d - 2.0 * (dot(d, n)) * n;
+
+                // Reflected ray
+                let ray = Ray {
+                    pos: bounce_point,
+                    dir: dir.normalize(),
+                };
+
+                return intersect_spheres(
+                    max_bounces,
+                    bounce_count + 1,
+                    &scene,
+                    &viewport,
+                    &spheres,
+                    &ray,
+                ) * bounce_sphere.material.color;
+            }
+        }
+    };
+
+    return col;
 }

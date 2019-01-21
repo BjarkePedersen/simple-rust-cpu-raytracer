@@ -12,9 +12,9 @@ pub struct Movement {
 
 pub fn handle_movement(
     window: &mut minifb::Window,
+    viewport: &mut Viewport,
     camera: &mut Camera,
     rgb_buffer: &mut Vec<(Col)>,
-    render: &mut Viewport,
     movement: &mut Movement,
     rot: &mut Matrix4<f32>,
     keys_down: &mut Vec<Key>,
@@ -41,8 +41,8 @@ pub fn handle_movement(
                 // Key::E => camera.rot.y -= ROT_SPEED,
                 Key::J => camera.focus_distance *= 0.9,
                 Key::L => camera.focus_distance *= 1.0 / 0.9,
-                Key::M => camera.aperture_size -= 10.0,
-                Key::I => camera.aperture_size += 10.0,
+                Key::M => camera.aperture_size -= 3.0,
+                Key::I => camera.aperture_size += 3.0,
                 _ => (),
             };
             match key {
@@ -70,20 +70,27 @@ pub fn handle_movement(
                 | Key::L
                 | Key::I
                 | Key::M => {
-                    println!("{}", camera.focus_distance);
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
-                    render.sample_iter = 0;
+                    viewport.sample_iter = 0;
 
                     let pos = *rot * movement.camera_movement.extend(0.0);
                     let pos = pos.truncate();
                     camera.pos += pos;
                     camera.focus_distance = clamp_min(camera.focus_distance, 0.0);
+                    camera.aperture_size = clamp_min(camera.aperture_size, 0.0);
                 }
+
+                Key::U => {
+                    if !keys_down.contains(&key) {
+                        viewport.overlays_enabled = !viewport.overlays_enabled;
+                    }
+                }
+
                 Key::Enter => {
                     if !keys_down.contains(&key) {
-                        render.distance_pass = !render.distance_pass;
+                        viewport.distance_pass = !viewport.distance_pass;
                         *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
-                        render.sample_iter = 0;
+                        viewport.sample_iter = 0;
                     }
                 }
                 _ => (),
@@ -124,7 +131,7 @@ pub fn handle_movement(
                 * cgmath::Matrix4::from_angle_x(cgmath::Rad(camera.rot.x));
 
             *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
-            render.sample_iter = 0;
+            viewport.sample_iter = 0;
 
             movement.moving = true;
         } else {

@@ -3,7 +3,7 @@ use crate::helpers::*;
 use crate::intersect::*;
 use crate::movement::*;
 use crate::scene::*;
-use crate::sky_box::sky_box;
+// use crate::sky_box::sky_box;
 
 mod app;
 mod bresenham;
@@ -21,7 +21,6 @@ use rayon::prelude::*;
 
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
-// const FOV: f32 = 90.0;
 const PIXEL_SIZE: f32 = 1.0 / WIDTH as f32;
 
 fn main() {
@@ -32,7 +31,9 @@ fn main() {
     });
 
     let mut scene = initialize_scene();
+
     let mut viewport = Viewport {
+        overlays_enabled: true,
         distance_pass: false,
         sample_iter: 0,
         time: Time {
@@ -42,23 +43,14 @@ fn main() {
         },
     };
 
-    let uv_size = 2.0 * (rad(scene.cameras[0].fov / 2.0)).tan();
-
-    let mut sorted_spheres = scene.spheres.clone();
-    sorted_spheres.sort_by_key(|k| {
-        OrderedFloat(clamp_min(
-            distance(scene.cameras[0].pos, k.pos) - k.radius,
-            0.0,
-        ))
-    });
-
     let mut movement = Movement {
         camera_movement: Vector3::new(0.0, 0.0, 0.0),
         mouse_movement: Vector3::new(0.0, 0.0, 0.0),
         moving: false,
     };
-
     let mut keys_down: Vec<Key> = vec![];
+
+    let uv_size = 2.0 * (rad(scene.cameras[0].fov / 2.0)).tan();
 
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
@@ -76,9 +68,9 @@ fn main() {
 
         handle_movement(
             &mut window,
+            &mut viewport,
             &mut scene.cameras[0],
             &mut rgb_buffer,
-            &mut viewport,
             &mut movement,
             &mut rot,
             &mut keys_down,
@@ -88,16 +80,6 @@ fn main() {
 
         let jitter_size =
             2.0 * scene.cameras[0].aperture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance));
-
-        if movement.moving {
-            // Only need to sort spheres if camera has moved
-            sorted_spheres.sort_by_key(|k| {
-                OrderedFloat(clamp_min(
-                    distance(scene.cameras[0].pos, k.pos) - k.radius,
-                    0.0,
-                ))
-            });
-        }
 
         rgb_buffer
             .par_iter_mut()
@@ -143,10 +125,7 @@ fn main() {
                     dir: dir.normalize(),
                 };
 
-                // Sky color
-                let mut col = sky_box(&scene, &ray);
-
-                intersect_spheres(&scene, &viewport, &sorted_spheres, &ray, &mut col);
+                let col = intersect_spheres(2, 0, &scene, &viewport, &scene.spheres, &ray);
 
                 pixel.r += col.r.powf(2.0);
                 pixel.g += col.g.powf(2.0);
@@ -165,8 +144,10 @@ fn main() {
             *col_2 = col_to_rgb_u32(col);
         }
 
-        for wireframe in &mut scene.wireframes {
-            wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
+        if viewport.overlays_enabled {
+            for wireframe in &mut scene.wireframes {
+                wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
+            }
         }
 
         window.update_with_buffer(&buffer).unwrap();

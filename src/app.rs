@@ -1,4 +1,5 @@
 pub struct Viewport {
+    pub overlays_enabled: bool,
     pub distance_pass: bool,
     pub sample_iter: u32,
     pub time: Time,
@@ -9,7 +10,6 @@ pub struct Time {
     pub prev: f64,
     pub framecount: i32,
 }
-
 
 pub fn timestamp() -> f64 {
     let timespec = time::get_time();

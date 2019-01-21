@@ -118,6 +118,18 @@ impl Mul<f32> for Col {
     }
 }
 
+impl Mul<Col> for Col {
+    type Output = Col;
+
+    fn mul(self, col2: Col) -> Col {
+        Col {
+            r: self.r * col2.r,
+            g: self.g * col2.g,
+            b: self.b * col2.b,
+        }
+    }
+}
+
 impl Div<f32> for Col {
     type Output = Col;
 
@@ -126,6 +138,18 @@ impl Div<f32> for Col {
             r: self.r / val,
             g: self.g / val,
             b: self.b / val,
+        }
+    }
+}
+
+impl Div<Col> for Col {
+    type Output = Col;
+
+    fn div(self, col2: Col) -> Col {
+        Col {
+            r: self.r / col2.r,
+            g: self.g / col2.g,
+            b: self.b / col2.b,
         }
     }
 }

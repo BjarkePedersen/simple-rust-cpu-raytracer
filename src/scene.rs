@@ -44,6 +44,10 @@ pub struct Ray {
 #[derive(Debug, Clone)]
 pub struct Material {
     pub color: Col,
+    // pub metallic: f32,
+    // pub roughness: f32,
+    // pub emission_color: Col,
+    // pub emission_intensity: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -115,6 +119,13 @@ pub fn initialize_scene() -> Scene {
             },
         },
         Sphere {
+            pos: Vector3::new(5.0, 2.0, 1.0),
+            radius: 1.0,
+            material: Material {
+                color: Col::new(1.0, 1.0, 1.0),
+            },
+        },
+        Sphere {
             pos: Vector3::new(2.0, 0.0, 0.0),
             radius: 0.3,
             material: Material {
@@ -136,10 +147,10 @@ pub fn initialize_scene() -> Scene {
             },
         },
         Sphere {
-            pos: Vector3::new(-2.0, 0.0, 2.0),
+            pos: Vector3::new(-6.0, 0.0, 2.0),
             radius: 0.3,
             material: Material {
-                color: Col::new(10.0, 10.0, 10.0),
+                color: Col::new(4.0, 2.0, 1.0),
             },
         },
     ];
@@ -150,7 +161,8 @@ pub fn initialize_scene() -> Scene {
                 rng.gen_range(-5.0, 5.0),
                 rng.gen_range(-5.0, 5.0),
             ),
-            radius: rng.gen_range(0.05, 0.65),
+            radius: 1.0,
+            // radius: rng.gen_range(0.05, 0.65),
             material: Material {
                 color: Col::new(
                     rng.gen_range(0.0, 1.0),
