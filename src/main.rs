@@ -15,13 +15,11 @@ mod sky_box;
 
 use cgmath::{InnerSpace, Vector3};
 use minifb::{Key, Window, WindowOptions};
-use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use rayon::prelude::*;
 
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
-const PIXEL_SIZE: f32 = 1.0 / WIDTH as f32;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -50,8 +48,6 @@ fn main() {
     };
     let mut keys_down: Vec<Key> = vec![];
 
-    let uv_size = 2.0 * (rad(scene.cameras[0].fov / 2.0)).tan();
-
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
         app::update_time(
@@ -78,8 +74,10 @@ fn main() {
             &HEIGHT,
         );
 
+        let image_plane_size = 2.0 * rad(scene.cameras[0].fov / 2.0).tan();
         let jitter_size =
-            2.0 * scene.cameras[0].aperture_size * (1.0 - 1.0 / (scene.cameras[0].focus_distance));
+            scene.cameras[0].aperture_size * 2.0 * (1.0 - 1.0 / (scene.cameras[0].focal_length));
+        let pixel_size: f32 = 1.0 / WIDTH as f32 * image_plane_size / 2.0;
 
         rgb_buffer
             .par_iter_mut()
@@ -88,30 +86,30 @@ fn main() {
                 let mut rng = thread_rng();
 
                 let jitter_angle = rng.gen_range(0.0, 1.0) * std::f32::consts::PI * 2.0;
-                let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt() * PIXEL_SIZE;
+                let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt();
                 let jitter_x = jitter_length * jitter_angle.cos();
                 let jitter_z = jitter_length * jitter_angle.sin();
 
                 let aperture_jitter =
                     Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_size;
 
-                let aliasing_jitter = Vector3::new(
-                    rng.gen_range(-1.0, 1.0) * PIXEL_SIZE,
+                let anti_aliasing_jitter = Vector3::new(
+                    rng.gen_range(-1.0, 1.0) * pixel_size,
                     0.0,
-                    rng.gen_range(-1.0, 1.0) * PIXEL_SIZE,
+                    rng.gen_range(-1.0, 1.0) * pixel_size,
                 );
 
                 let dir = {
                     let uv = uv(WIDTH * HEIGHT - i - 1);
 
                     Vector3::new(
-                        ((uv.x - WIDTH as f32 / 2.0) / HEIGHT as f32) * -uv_size
+                        ((uv.x - WIDTH as f32 / 2.0) / HEIGHT as f32) * -image_plane_size
                             + jitter_x * jitter_size,
                         1.0,
-                        ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * uv_size
+                        ((uv.y - HEIGHT as f32 / 2.0) / HEIGHT as f32) * image_plane_size
                             + jitter_z * jitter_size,
                     ) - aperture_jitter
-                        + aliasing_jitter
+                        + anti_aliasing_jitter
                 };
 
                 let dir = rot * dir.extend(0.0);
@@ -121,11 +119,11 @@ fn main() {
                 let aperture_jitter = aperture_jitter_mat4.truncate();
 
                 let ray = Ray {
-                    pos: aperture_jitter + scene.cameras[0].pos + aliasing_jitter,
+                    pos: aperture_jitter + scene.cameras[0].pos + anti_aliasing_jitter,
                     dir: dir.normalize(),
                 };
 
-                let col = intersect_spheres(2, 0, &scene, &viewport, &scene.spheres, &ray);
+                let col = intersect_spheres(3, 0, &scene, &viewport, &scene.spheres, &ray);
 
                 pixel.r += col.r.powf(2.0);
                 pixel.g += col.g.powf(2.0);

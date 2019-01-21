@@ -1,5 +1,5 @@
 use crate::app::Viewport;
-use crate::helpers::{clamp, distance, mix_col, Col};
+use crate::helpers::{distance, Col};
 use crate::scene::{Ray, Scene, Sphere};
 use crate::sky_box::sky_box;
 use cgmath::{dot, InnerSpace, Vector3};

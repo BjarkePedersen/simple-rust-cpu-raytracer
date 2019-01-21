@@ -1,5 +1,5 @@
 use crate::app::Viewport;
-use crate::helpers::{clamp_min, Col};
+use crate::helpers::{clamp_min, clamp, Col};
 use crate::scene::Camera;
 use cgmath::{Matrix4, Vector3};
 use minifb::{Key, MouseMode};
@@ -39,10 +39,12 @@ pub fn handle_movement(
                 Key::Down => camera.rot.x -= ROT_SPEED,
                 // Key::Q => camera.rot.y += ROT_SPEED,
                 // Key::E => camera.rot.y -= ROT_SPEED,
-                Key::J => camera.focus_distance *= 0.9,
-                Key::L => camera.focus_distance *= 1.0 / 0.9,
-                Key::M => camera.aperture_size -= 3.0,
-                Key::I => camera.aperture_size += 3.0,
+                Key::J => camera.focal_length *= 0.9,
+                Key::L => camera.focal_length /= 0.9,
+                Key::I => camera.aperture_size += 0.01,
+                Key::M => camera.aperture_size -= 0.01,
+                Key::Z => camera.fov *= 0.95,
+                Key::X => camera.fov /= 0.95,
                 _ => (),
             };
             match key {
@@ -69,15 +71,19 @@ pub fn handle_movement(
                 | Key::J
                 | Key::L
                 | Key::I
-                | Key::M => {
+                | Key::M 
+                | Key::Z
+                | Key::X 
+                => {
                     *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     viewport.sample_iter = 0;
 
                     let pos = *rot * movement.camera_movement.extend(0.0);
                     let pos = pos.truncate();
                     camera.pos += pos;
-                    camera.focus_distance = clamp_min(camera.focus_distance, 0.0);
+                    camera.focal_length = clamp_min(camera.focal_length, 0.0);
                     camera.aperture_size = clamp_min(camera.aperture_size, 0.0);
+                    camera.fov = clamp(camera.fov, std::f32::MIN_POSITIVE, 179.0);
                 }
 
                 Key::U => {
@@ -113,8 +119,8 @@ pub fn handle_movement(
                 movement.mouse_movement.y - mouse.1 / 100.0,
             ];
 
-            camera.rot.z -= mouse_delta[0];
-            camera.rot.x += mouse_delta[1];
+            camera.rot.z -= mouse_delta[0] * camera.fov / 90.0;
+            camera.rot.x += mouse_delta[1] * camera.fov / 90.0;
 
             // Constrain vertical rotation.
             if camera.rot.x > std::f32::consts::PI / 2.0 {

@@ -10,8 +10,6 @@ pub struct Camera {
     pub rot: Vector3<f32>,
     pub fov: f32,
     pub focal_length: f32,
-    pub sensor_size: f32,
-    pub focus_distance: f32,
     pub aperture_size: f32,
 }
 
@@ -93,10 +91,8 @@ pub fn initialize_scene() -> Scene {
             pos: Vector3::new(0.0, -5.0, 0.0),
             rot: Vector3::new(0.0, 0.0, 0.0),
             fov: 90.0,
-            focal_length: 0.35,
-            sensor_size: 1.0,
-            focus_distance: 5.0,
-            aperture_size: 20.0,
+            focal_length: 8.0,
+            aperture_size: 0.1,
         }],
         spheres: vec![],
         sky: Sky {
