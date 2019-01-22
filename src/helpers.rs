@@ -1,5 +1,4 @@
 use crate::WIDTH;
-use cgmath::Vector3;
 use std::f32;
 use std::ops::Add;
 use std::ops::Div;
@@ -176,10 +175,6 @@ pub fn uv(index: usize) -> UV {
         x: (index % WIDTH as usize) as f32,
         y: (index as f32 / WIDTH as f32) as f32,
     }
-}
-
-pub fn distance(vec1: Vector3<f32>, vec2: Vector3<f32>) -> f32 {
-    ((vec2.x - vec1.x).powi(2) + (vec2.y - vec1.y).powi(2) + (vec2.z - vec1.z).powi(2)).sqrt()
 }
 
 pub fn rad(deg: f32) -> f32 {
