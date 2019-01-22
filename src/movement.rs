@@ -94,7 +94,7 @@ pub fn handle_movement(
 
                 Key::Enter => {
                     if !keys_down.contains(&key) {
-                        viewport.distance_pass = !viewport.distance_pass;
+                        viewport.depth_pass = !viewport.depth_pass;
                         *rgb_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                         viewport.sample_iter = 0;
                     }

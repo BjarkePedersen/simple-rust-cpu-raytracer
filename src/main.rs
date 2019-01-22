@@ -32,7 +32,7 @@ fn main() {
 
     let mut viewport = Viewport {
         overlays_enabled: true,
-        distance_pass: false,
+        depth_pass: false,
         sample_iter: 0,
         time: Time {
             prev: app::timestamp(),
@@ -123,7 +123,15 @@ fn main() {
                     dir: dir.normalize(),
                 };
 
-                let col = intersect_spheres(3, 0, &scene, &viewport, &scene.spheres, None, &ray);
+                let col = intersect_spheres(
+                    3,
+                    0,
+                    &scene,
+                    viewport.depth_pass,
+                    &scene.spheres,
+                    None,
+                    &ray,
+                );
 
                 pixel.r += col.r.powf(2.0);
                 pixel.g += col.g.powf(2.0);

@@ -9,7 +9,7 @@ pub fn intersect_spheres(
     max_bounces: i32,
     bounce_count: i32,
     scene: &Scene,
-    viewport: &Viewport,
+    depth_pass: bool,
     spheres: &[Sphere],
     ignore: Option<usize>,
     ray: &Ray,
@@ -23,8 +23,9 @@ pub fn intersect_spheres(
         if Some(i) == ignore {
             continue;
         }
-        let intersect_point = sphere.intersect(ray);
-        if let Some(intersect_point) = intersect_point {
+        let solution = sphere.intersect(ray);
+        if let Some(solution) = solution {
+            let intersect_point = ray.pos + solution * ray.dir;
             let distance = distance(scene.cameras[0].pos, intersect_point);
 
             if distance < closest_intersection {
@@ -33,7 +34,7 @@ pub fn intersect_spheres(
                 bounce_point = Some(intersect_point.clone());
                 bounce_sphere = Some((i, &sphere));
 
-                if !viewport.distance_pass {
+                if !depth_pass {
                     col = Col::new(0.0, 0.0, 0.0);
                 } else {
                     let d = distance / 20.0;
@@ -47,7 +48,7 @@ pub fn intersect_spheres(
     // Make new ray from old ray, bounce_point, and bounce_sphere
     // Recursively call intersect_spheres with new ray
 
-    let conditions = bounce_count < max_bounces && !viewport.distance_pass;
+    let conditions = bounce_count < max_bounces && !depth_pass;
 
     if conditions {
         if let Some(bounce_point) = bounce_point {
@@ -71,7 +72,7 @@ pub fn intersect_spheres(
                     max_bounces,
                     bounce_count + 1,
                     &scene,
-                    &viewport,
+                    depth_pass,
                     &spheres,
                     Some(i),
                     &ray,
