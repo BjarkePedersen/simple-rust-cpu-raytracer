@@ -1,5 +1,5 @@
 use crate::scene::{Ray, Sphere};
-use cgmath::{InnerSpace, Vector3};
+use cgmath::InnerSpace;
 
 pub trait Intersect {
     fn intersect(&self, ray: &Ray) -> Option<f32>;

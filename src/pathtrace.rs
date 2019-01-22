@@ -1,4 +1,3 @@
-use crate::app::Viewport;
 use crate::helpers::{distance, Col};
 use crate::intersect::*;
 use crate::scene::{Ray, Scene, Sphere};
