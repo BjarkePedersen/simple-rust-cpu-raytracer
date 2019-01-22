@@ -10,7 +10,7 @@ pub struct Camera {
     pub rot: Vector3<f32>,
     pub fov: f32,
     pub focal_length: f32,
-    pub aperture_size: f32,
+    pub aperture_radius: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -92,7 +92,7 @@ pub fn initialize_scene() -> Scene {
             rot: Vector3::new(0.0, 0.0, 0.0),
             fov: 90.0,
             focal_length: 8.0,
-            aperture_size: 0.1,
+            aperture_radius: 0.1,
         }],
         spheres: vec![],
         sky: Sky {
@@ -157,8 +157,7 @@ pub fn initialize_scene() -> Scene {
                 rng.gen_range(-5.0, 5.0),
                 rng.gen_range(-5.0, 5.0),
             ),
-            radius: 1.0,
-            // radius: rng.gen_range(0.05, 0.65),
+            radius: rng.gen_range(0.05, 0.65),
             material: Material {
                 color: Col::new(
                     rng.gen_range(0.0, 1.0),

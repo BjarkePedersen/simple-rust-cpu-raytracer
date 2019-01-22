@@ -41,8 +41,8 @@ pub fn handle_movement(
                 // Key::E => camera.rot.y -= ROT_SPEED,
                 Key::J => camera.focal_length *= 0.9,
                 Key::L => camera.focal_length /= 0.9,
-                Key::I => camera.aperture_size += 0.01,
-                Key::M => camera.aperture_size -= 0.01,
+                Key::I => camera.aperture_radius += 0.01,
+                Key::M => camera.aperture_radius -= 0.01,
                 Key::Z => camera.fov *= 0.95,
                 Key::X => camera.fov /= 0.95,
                 _ => (),
@@ -82,7 +82,7 @@ pub fn handle_movement(
                     let pos = pos.truncate();
                     camera.pos += pos;
                     camera.focal_length = clamp_min(camera.focal_length, 0.0);
-                    camera.aperture_size = clamp_min(camera.aperture_size, 0.0);
+                    camera.aperture_radius = clamp_min(camera.aperture_radius, 0.0);
                     camera.fov = clamp(camera.fov, std::f32::MIN_POSITIVE, 179.0);
                 }
 

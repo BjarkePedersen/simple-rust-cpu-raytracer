@@ -1,17 +1,17 @@
 use crate::app::*;
 use crate::helpers::*;
-use crate::intersect::*;
 use crate::movement::*;
+use crate::pathtrace::*;
 use crate::scene::*;
-// use crate::sky_box::sky_box;
 
 mod app;
 mod bresenham;
 mod helpers;
 mod intersect;
 mod movement;
+mod pathtrace;
 mod scene;
-mod sky_box;
+mod skybox;
 
 use cgmath::{InnerSpace, Vector3};
 use minifb::{Key, Window, WindowOptions};
@@ -76,7 +76,7 @@ fn main() {
 
         let image_plane_size = 2.0 * rad(scene.cameras[0].fov / 2.0).tan();
         let jitter_size =
-            scene.cameras[0].aperture_size * 2.0 * (1.0 - 1.0 / (scene.cameras[0].focal_length));
+            scene.cameras[0].aperture_radius * 2.0 * (1.0 - 1.0 / (scene.cameras[0].focal_length));
         let pixel_size: f32 = 1.0 / WIDTH as f32 * image_plane_size / 2.0;
 
         rgb_buffer
@@ -91,7 +91,7 @@ fn main() {
                 let jitter_z = jitter_length * jitter_angle.sin();
 
                 let aperture_jitter =
-                    Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_size;
+                    Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_radius;
 
                 let anti_aliasing_jitter = Vector3::new(
                     rng.gen_range(-1.0, 1.0) * pixel_size,
@@ -123,7 +123,7 @@ fn main() {
                     dir: dir.normalize(),
                 };
 
-                let col = intersect_spheres(3, 0, &scene, &viewport, &scene.spheres, &ray);
+                let col = intersect_spheres(3, 0, &scene, &viewport, &scene.spheres, None, &ray);
 
                 pixel.r += col.r.powf(2.0);
                 pixel.g += col.g.powf(2.0);
