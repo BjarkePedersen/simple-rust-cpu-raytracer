@@ -1,2 +1,17 @@
 # Raytracey-Not-A-Raytracer
-A simple homewbrewed path tracer. It's not meant to be good path tracer by any means, It's meant to teach me Rust.
+A simple homebrewed, CPU-powered path tracer. It's not meant to be good path tracer by any means, It's meant to teach me Rust. Feel free to contribute.
+
+## Controls
+Movement: W A S D LShift Space
+
+Look: Mouse
+
+Zoom: Z X
+
+Focus distance: J L
+
+Aperture size: I M
+
+Toggle overlays: U
+
+Toggle depth pass: Enter
