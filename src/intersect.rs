@@ -7,15 +7,12 @@ pub trait Intersect {
 
 impl Intersect for Sphere {
     fn intersect(&self, ray: &Ray) -> Option<f32> {
-        let o = ray.pos;
-        let c = self.pos;
-
-        let r = self.radius;
-        let l = c - o;
+        let r_squared = self.radius.powi(2);
+        let l = self.pos - ray.pos;
         let tca = l.dot(ray.dir);
         let d2 = l.dot(l) - tca.powi(2);
-        let r_squared = r.powi(2);
         let thc = (r_squared - d2).sqrt();
+
         if d2 > r_squared {
             return None;
         }
@@ -29,6 +26,7 @@ impl Intersect for Sphere {
         if t0 < 0.0 {
             return None;
         }
+
         return Some(t0);
     }
 }

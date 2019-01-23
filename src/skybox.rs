@@ -21,5 +21,5 @@ pub fn sky_box(scene: &Scene, ray: &Ray) -> Col {
 
     col = mix_col(col, ground, if ray.dir.z > 0.0 { 1.0 } else { 0.0 });
 
-    col
+    return col;
 }
