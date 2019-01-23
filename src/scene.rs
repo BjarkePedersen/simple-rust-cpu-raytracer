@@ -44,8 +44,8 @@ pub struct Material {
     pub color: Col,
     // pub metallic: f32,
     // pub roughness: f32,
-    // pub emission_color: Col,
-    // pub emission_intensity: f32,
+    pub emission_color: Col,
+    pub emission_intensity: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -112,6 +112,8 @@ pub fn initialize_scene() -> Scene {
             radius: 1.0,
             material: Material {
                 color: Col::new(0.1, 0.1, 0.1),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         },
         Sphere {
@@ -119,6 +121,8 @@ pub fn initialize_scene() -> Scene {
             radius: 1.0,
             material: Material {
                 color: Col::new(1.0, 1.0, 1.0),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         },
         Sphere {
@@ -126,6 +130,8 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(1.0, 0.0, 0.0),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         },
         Sphere {
@@ -133,6 +139,8 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.0, 1.0, 0.0),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         },
         Sphere {
@@ -140,13 +148,17 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.1, 0.3, 1.0),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         },
         Sphere {
-            pos: Vector3::new(-6.0, 0.0, 2.0),
-            radius: 0.3,
+            pos: Vector3::new(-8.0, 0.0, 2.0),
+            radius: 1.0,
             material: Material {
-                color: Col::new(4.0, 2.0, 1.0),
+                color: Col::new(0.0, 0.0, 0.0),
+                emission_color: Col::new(4.0, 2.0, 1.0),
+                emission_intensity: 1.0,
             },
         },
     ];
@@ -164,6 +176,8 @@ pub fn initialize_scene() -> Scene {
                     rng.gen_range(0.0, 1.0),
                     rng.gen_range(0.0, 1.0),
                 ),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
             },
         });
     }

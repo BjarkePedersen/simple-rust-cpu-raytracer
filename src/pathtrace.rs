@@ -74,6 +74,7 @@ pub fn intersect_spheres(
         .enumerate()
         .filter_map(|(i, sphere)| {
             if Some(i) == ignore {
+                // Prevents intersection with reflected sphere
                 None
             } else {
                 Some((i, sphere.intersect(ray)?))
@@ -107,7 +108,7 @@ pub fn intersect_spheres(
             let d = ray.dir;
 
             // Reflected vector
-            let dir = d - 2.0 * (dot(d, n)) * n;
+            let dir = d - 2.0 * dot(d, n) * n;
 
             // Reflected ray
             let ray = Ray {
@@ -123,7 +124,8 @@ pub fn intersect_spheres(
                 &spheres,
                 Some(i),
                 &ray,
-            ) * bounce_sphere.material.color;
+            ) * bounce_sphere.material.color
+                + bounce_sphere.material.emission_color * bounce_sphere.material.emission_intensity;
         }
     };
 
