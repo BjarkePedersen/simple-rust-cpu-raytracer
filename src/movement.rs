@@ -95,6 +95,9 @@ pub fn handle_input(
                 Key::N => {
                     if !keys_down.contains(&key) {
                         viewport.autofocus = !viewport.autofocus;
+                        *render_buffer =
+                            vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
+                        viewport.sample_iter = 0;
                     }
                 }
 
