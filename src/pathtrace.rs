@@ -45,14 +45,13 @@ pub fn camera_ray(
             + anti_aliasing_jitter
     };
 
-    let dir = movement.camera_rotation * dir.extend(0.0);
-    let dir = dir.truncate();
+    let dir = (movement.camera_rotation * dir.extend(0.0)).truncate();
 
-    let aperture_jitter_mat4 = movement.camera_rotation * aperture_jitter.extend(0.0);
-    let aperture_jitter = aperture_jitter_mat4.truncate();
+    let combined_jitter = aperture_jitter + anti_aliasing_jitter;
+    let combined_jitter = (movement.camera_rotation * combined_jitter.extend(0.0)).truncate();
 
     return Ray {
-        pos: aperture_jitter + scene.cameras[0].pos + anti_aliasing_jitter,
+        pos: scene.cameras[0].pos + combined_jitter,
         dir: dir.normalize(),
     };
 }
@@ -113,13 +112,13 @@ pub fn intersect_spheres(
             let mut dir = d - 2.0 * dot(d, n) * n;
 
             if roughness > 0.0 {
-                let rnd_dir = n + Vector3::new(
+                let random_dir = n + Vector3::new(
                     rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
                     rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
                     rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
                 );
 
-                dir = dir * (1.0 - roughness) + rnd_dir * roughness;
+                dir = dir * (1.0 - roughness) + random_dir * roughness;
             }
 
             // Reflected ray
