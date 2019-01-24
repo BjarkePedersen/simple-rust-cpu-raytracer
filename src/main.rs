@@ -3,6 +3,7 @@ use crate::helpers::*;
 use crate::movement::*;
 use crate::pathtrace::*;
 use crate::scene::*;
+use rand::prelude::*;
 
 mod app;
 mod bresenham;
@@ -15,7 +16,6 @@ mod skybox;
 
 use cgmath::Vector3;
 use minifb::{Key, Window, WindowOptions};
-// use rand::prelude::*;
 use rayon::prelude::*;
 
 const WIDTH: usize = 400;
@@ -76,6 +76,7 @@ fn main() {
             .par_iter_mut()
             .enumerate()
             .for_each(|(i, pixel)| {
+                let mut rng = thread_rng();
                 // Create ray from camera
                 let ray = camera_ray(
                     i,
@@ -86,6 +87,7 @@ fn main() {
                     WIDTH,
                     HEIGHT,
                     &movement,
+                    &mut rng,
                 );
 
                 // Trace ray
@@ -97,6 +99,7 @@ fn main() {
                     &scene.spheres,
                     None,
                     &ray,
+                    &mut rng,
                 );
 
                 // Update render buffer with result

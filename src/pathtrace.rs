@@ -16,9 +16,8 @@ pub fn camera_ray(
     width: usize,
     height: usize,
     movement: &Movement,
+    rng: &mut ThreadRng,
 ) -> Ray {
-    let mut rng = thread_rng();
-
     let jitter_angle = rng.gen_range(0.0, 1.0) * std::f32::consts::PI * 2.0;
     let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt();
     let jitter_x = jitter_length * jitter_angle.cos();
@@ -66,6 +65,7 @@ pub fn intersect_spheres(
     spheres: &[Sphere],
     ignore: Option<usize>,
     ray: &Ray,
+    rng: &mut ThreadRng,
 ) -> Col {
     let mut col = sky_box(scene, ray);
 
@@ -107,8 +107,18 @@ pub fn intersect_spheres(
             // Incoming ray vector
             let d = ray.dir;
 
+            let roughness = bounce_sphere.material.roughness;
+
+            let rnd_dir = n + Vector3::new(
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+            );
+
             // Reflected vector
-            let dir = d - 2.0 * dot(d, n) * n;
+            let mut dir = d - 2.0 * dot(d, n) * n;
+
+            dir = dir * (1.0 - roughness) + rnd_dir * roughness;
 
             // Reflected ray
             let ray = Ray {
@@ -124,6 +134,7 @@ pub fn intersect_spheres(
                 &spheres,
                 Some(i),
                 &ray,
+                rng,
             ) * bounce_sphere.material.color
                 + bounce_sphere.material.emission_color * bounce_sphere.material.emission_intensity;
         }

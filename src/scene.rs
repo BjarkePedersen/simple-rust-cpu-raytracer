@@ -43,7 +43,7 @@ pub struct Ray {
 pub struct Material {
     pub color: Col,
     // pub metallic: f32,
-    // pub roughness: f32,
+    pub roughness: f32,
     pub emission_color: Col,
     pub emission_intensity: f32,
 }
@@ -88,11 +88,11 @@ pub fn initialize_scene() -> Scene {
 
     let mut scene = Scene {
         cameras: vec![Camera {
-            pos: Vector3::new(0.0, -5.0, 0.0),
+            pos: Vector3::new(10.0, -10.0, 10.0),
             rot: Vector3::new(0.0, 0.0, 0.0),
             fov: 90.0,
             focal_length: 8.0,
-            aperture_radius: 0.1,
+            aperture_radius: 0.0,
         }],
         spheres: vec![],
         sky: Sky {
@@ -107,29 +107,24 @@ pub fn initialize_scene() -> Scene {
     // Spheres
 
     let mut spheres = vec![
+        // Wireframe sphere
         Sphere {
-            pos: Vector3::new(3.0, 2.0, 1.0),
+            pos: Vector3::new(10.0, 2.0, 1.0),
             radius: 1.0,
             material: Material {
                 color: Col::new(0.1, 0.1, 0.1),
+                roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },
         },
-        Sphere {
-            pos: Vector3::new(5.0, 2.0, 1.0),
-            radius: 1.0,
-            material: Material {
-                color: Col::new(1.0, 1.0, 1.0),
-                emission_color: Col::new(1.0, 1.0, 1.0),
-                emission_intensity: 0.0,
-            },
-        },
+        // Origin
         Sphere {
             pos: Vector3::new(2.0, 0.0, 0.0),
             radius: 0.3,
             material: Material {
                 color: Col::new(1.0, 0.0, 0.0),
+                roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },
@@ -139,6 +134,7 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.0, 1.0, 0.0),
+                roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },
@@ -148,21 +144,39 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.1, 0.3, 1.0),
+                roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },
         },
+        // Light
         Sphere {
             pos: Vector3::new(-8.0, 0.0, 2.0),
-            radius: 1.0,
+            radius: 3.0,
             material: Material {
                 color: Col::new(0.0, 0.0, 0.0),
+                roughness: 1.0,
                 emission_color: Col::new(4.0, 2.0, 1.0),
                 emission_intensity: 1.0,
             },
         },
     ];
-    for _i in 0..50 {
+    for i in 0..6 {
+        spheres.push(Sphere {
+            pos: Vector3::new(-7.5 + 2.5 * i as f32, 8.0, 1.0),
+            radius: 1.0,
+            material: Material {
+                color: Col::new(1.0, 1.0, 1.0),
+                roughness: (i as f32 / 6.0).powi(2),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
+            },
+        });
+    }
+
+    for _ in 0..50 {
+        let rnd = rng.gen_range(0.0, 1.0);
+
         spheres.push(Sphere {
             pos: Vector3::new(
                 rng.gen_range(-5.0, 5.0),
@@ -176,6 +190,7 @@ pub fn initialize_scene() -> Scene {
                     rng.gen_range(0.0, 1.0),
                     rng.gen_range(0.0, 1.0),
                 ),
+                roughness: if rnd < 0.5 { 0.0 } else { 1.0 },
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },
