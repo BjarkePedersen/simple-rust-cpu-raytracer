@@ -109,16 +109,18 @@ pub fn intersect_spheres(
 
             let roughness = bounce_sphere.material.roughness;
 
-            let rnd_dir = n + Vector3::new(
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-            );
-
             // Reflected vector
             let mut dir = d - 2.0 * dot(d, n) * n;
 
-            dir = dir * (1.0 - roughness) + rnd_dir * roughness;
+            if roughness > 0.0 {
+                let rnd_dir = n + Vector3::new(
+                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                );
+
+                dir = dir * (1.0 - roughness) + rnd_dir * roughness;
+            }
 
             // Reflected ray
             let ray = Ray {
