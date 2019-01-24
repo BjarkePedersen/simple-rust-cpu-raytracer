@@ -1,6 +1,7 @@
 use crate::app::Viewport;
-use crate::helpers::{clamp, clamp_min, Col};
-use crate::scene::Camera;
+use crate::helpers::{clamp, clamp_min, distance, Col};
+use crate::pathtrace::{camera_ray_simple, raycast};
+use crate::scene::{Camera, Scene};
 use cgmath::{Matrix4, Vector3};
 use minifb::{Key, MouseMode};
 
@@ -83,9 +84,17 @@ pub fn handle_input(
                     camera.fov = clamp(camera.fov, std::f32::MIN_POSITIVE, 179.0);
                 }
 
+                // Toggle overlays
                 Key::U => {
                     if !keys_down.contains(&key) {
                         viewport.overlays_enabled = !viewport.overlays_enabled;
+                    }
+                }
+
+                // Toggle autofocus
+                Key::N => {
+                    if !keys_down.contains(&key) {
+                        viewport.autofocus = !viewport.autofocus;
                     }
                 }
 
@@ -151,4 +160,29 @@ pub fn handle_input(
     }
 
     movement.camera_movement = Vector3::new(0.0, 0.0, 0.0);
+}
+
+pub fn autofocus(
+    autofocus: bool,
+    width: usize,
+    height: usize,
+    scene: &mut Scene,
+    image_plane_size: f32,
+    movement: &Movement,
+) {
+    if autofocus {
+        let focus_probe = camera_ray_simple(
+            width * height / 2 - width / 2,
+            scene,
+            image_plane_size,
+            width,
+            height,
+            movement,
+        );
+
+        match raycast(&scene.spheres, focus_probe) {
+            Some(point) => scene.cameras[0].focal_length = distance(scene.cameras[0].pos, point),
+            None => scene.cameras[0].focal_length = 200.0,
+        };
+    }
 }

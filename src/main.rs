@@ -32,6 +32,7 @@ fn main() {
 
     let mut viewport = Viewport {
         overlays_enabled: true,
+        autofocus: true,
         depth_pass: false,
         sample_iter: 0,
         time: Time {
@@ -67,8 +68,19 @@ fn main() {
         );
 
         let image_plane_size = 2.0 * rad(scene.cameras[0].fov / 2.0).tan();
-        let jitter_size =
-            scene.cameras[0].aperture_radius * 2.0 * (1.0 - 1.0 / (scene.cameras[0].focal_length));
+
+        autofocus(
+            viewport.autofocus,
+            WIDTH,
+            HEIGHT,
+            &mut scene,
+            image_plane_size,
+            &movement,
+        );
+
+        let jitter_size = scene.cameras[0].aperture_radius
+            * 2.0
+            * (1.0 - 1.0 / (scene.cameras[0].focal_length + 0.5));
         let pixel_size: f32 = 1.0 / WIDTH as f32 * image_plane_size / 2.0;
 
         // Iterate over pixels

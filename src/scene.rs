@@ -92,7 +92,7 @@ pub fn initialize_scene() -> Scene {
             rot: Vector3::new(0.0, 0.0, 0.0),
             fov: 90.0,
             focal_length: 8.0,
-            aperture_radius: 0.0,
+            aperture_radius: 0.05,
         }],
         spheres: vec![],
         sky: Sky {

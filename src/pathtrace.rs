@@ -56,6 +56,32 @@ pub fn camera_ray(
     };
 }
 
+pub fn camera_ray_simple(
+    i: usize,
+    scene: &Scene,
+    image_plane_size: f32,
+    width: usize,
+    height: usize,
+    movement: &Movement,
+) -> Ray {
+    let dir = {
+        let uv = uv(width * height - i - 1);
+
+        Vector3::new(
+            ((uv.x - width as f32 / 2.0) / height as f32) * -image_plane_size,
+            1.0,
+            ((uv.y - height as f32 / 2.0) / height as f32) * image_plane_size,
+        )
+    };
+
+    let dir = (movement.camera_rotation * dir.extend(0.0)).truncate();
+
+    return Ray {
+        pos: scene.cameras[0].pos,
+        dir: dir.normalize(),
+    };
+}
+
 pub fn intersect_spheres(
     max_bounces: i32,
     bounce_count: i32,
@@ -142,4 +168,19 @@ pub fn intersect_spheres(
     };
 
     return col;
+}
+
+pub fn raycast(spheres: &[Sphere], ray: Ray) -> Option<Vector3<f32>> {
+    let closest: Option<(usize, f32)> = spheres
+        .iter()
+        .enumerate()
+        .filter_map(|(i, sphere)| Some((i, sphere.intersect(&ray)?)))
+        .min_by_key(|(_, distance)| OrderedFloat(*distance));
+
+    if let Some((_, t)) = closest {
+        let bounce_point = ray.pos + ray.dir * t;
+        return Some(bounce_point);
+    } else {
+        return None;
+    };
 }
