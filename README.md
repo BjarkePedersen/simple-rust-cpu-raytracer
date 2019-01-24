@@ -12,6 +12,8 @@ Focus distance: J L
 
 Aperture size: I M
 
+Toggle autofocus: N
+
 Toggle overlays: U
 
 Toggle depth pass: Enter
