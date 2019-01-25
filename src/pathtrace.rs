@@ -7,6 +7,7 @@ use cgmath::{dot, InnerSpace, Vector3};
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
 
+// Create ray from camera
 pub fn camera_ray(
     i: usize,
     scene: &Scene,
@@ -56,6 +57,7 @@ pub fn camera_ray(
     };
 }
 
+// Create ray from camera with no jittering (used for autofocus)
 pub fn camera_ray_simple(
     i: usize,
     scene: &Scene,
@@ -137,6 +139,7 @@ pub fn intersect_spheres(
             // Reflected vector
             let mut dir = d - 2.0 * dot(d, n) * n;
 
+            // BRDF
             if roughness > 0.0 {
                 let random_dir = n + Vector3::new(
                     rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,

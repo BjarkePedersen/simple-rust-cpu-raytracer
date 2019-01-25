@@ -101,6 +101,7 @@ pub fn handle_input(
                     }
                 }
 
+                // Toggle depth pass
                 Key::Enter => {
                     if !keys_down.contains(&key) {
                         viewport.depth_pass = !viewport.depth_pass;
