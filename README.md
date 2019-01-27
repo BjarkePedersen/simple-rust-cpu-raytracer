@@ -19,4 +19,4 @@ Toggle overlays: U
 Toggle depth pass: Enter
 
 ## Preview
-![alt text](https://i.imgur.com/1NUScar.jpg)
+![alt text](https://i.imgur.com/Y5f9IJl.png)
