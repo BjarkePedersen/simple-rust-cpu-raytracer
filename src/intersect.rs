@@ -1,5 +1,5 @@
 use crate::scene::{Ray, Sphere};
-use cgmath::InnerSpace;
+use cgmath::{dot, InnerSpace};
 
 pub trait Intersect {
     fn intersect(&self, ray: &Ray) -> Option<f32>;
@@ -24,6 +24,9 @@ impl Intersect for Sphere {
             t0 = t1;
         }
         if t0 < 0.0 {
+            return None;
+        }
+        if dot(ray.pos + ray.dir * t0 - self.pos, ray.dir) > 0.0 {
             return None;
         }
 

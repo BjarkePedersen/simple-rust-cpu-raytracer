@@ -42,7 +42,7 @@ pub struct Ray {
 #[derive(Debug, Clone)]
 pub struct Material {
     pub color: Col,
-    // pub metallic: f32,
+    pub metallic: f32,
     pub roughness: f32,
     pub emission_color: Col,
     pub emission_intensity: f32,
@@ -113,6 +113,7 @@ pub fn initialize_scene() -> Scene {
             radius: 1.0,
             material: Material {
                 color: Col::new(0.1, 0.1, 0.1),
+                metallic: 0.0,
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
@@ -124,6 +125,7 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(1.0, 0.0, 0.0),
+                metallic: 0.0,
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
@@ -134,6 +136,7 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.0, 1.0, 0.0),
+                metallic: 0.0,
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
@@ -144,6 +147,7 @@ pub fn initialize_scene() -> Scene {
             radius: 0.3,
             material: Material {
                 color: Col::new(0.1, 0.3, 1.0),
+                metallic: 0.0,
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
@@ -155,6 +159,7 @@ pub fn initialize_scene() -> Scene {
             radius: 3.0,
             material: Material {
                 color: Col::new(0.0, 0.0, 0.0),
+                metallic: 0.0,
                 roughness: 1.0,
                 emission_color: Col::new(4.0, 2.0, 1.0),
                 emission_intensity: 1.0,
@@ -167,6 +172,7 @@ pub fn initialize_scene() -> Scene {
             radius: 1.0,
             material: Material {
                 color: Col::new(1.0, 1.0, 1.0),
+                metallic: 1.0,
                 roughness: (i as f32 / 6.0).powi(2),
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
@@ -190,7 +196,8 @@ pub fn initialize_scene() -> Scene {
                     rng.gen_range(0.0, 1.0),
                     rng.gen_range(0.0, 1.0),
                 ),
-                roughness: if rnd < 0.5 { 0.0 } else { 1.0 },
+                metallic: if rnd < 0.5 { 0.0 } else { 1.0 },
+                roughness: 0.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
             },

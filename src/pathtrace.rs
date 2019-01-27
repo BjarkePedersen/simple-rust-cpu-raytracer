@@ -1,4 +1,4 @@
-use crate::helpers::{uv, Col};
+use crate::helpers::{clamp, uv, Col};
 use crate::intersect::*;
 use crate::movement::Movement;
 use crate::scene::{Ray, Scene, Sphere};
@@ -137,36 +137,67 @@ pub fn intersect_spheres(
             let roughness = bounce_sphere.material.roughness;
 
             // Reflected vector
-            let mut dir = d - 2.0 * dot(d, n) * n;
+            let specular = d - 2.0 * dot(d, n) * n;
+
+            let metallic = bounce_sphere.material.metallic;
+
+            // Schlick aproximation
+            let n1: f32 = 1.0;
+            let n2: f32 = 1.5;
+            let r0 = ((n1 - n2) / (n1 + n2)).powi(2);
+            let cos_x = -dot(n, d);
+
+            let x = 1.0 - cos_x;
+            let fresnel = clamp(r0 + (1.0 - r0) * x.powi(5), 0.0, 1.0);
 
             // BRDF
-            if roughness > 0.0 {
-                let random_dir = n + Vector3::new(
-                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                    rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                );
+            let diffuse = n + Vector3::new(
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+            );
 
-                dir = dir * (1.0 - roughness) + random_dir * roughness;
-            }
+            let specular = diffuse * roughness + specular * (1.0 - roughness);
 
-            // Reflected ray
-            let ray = Ray {
+            // Reflected rays
+            let ray_specular = Ray {
                 pos: bounce_point,
-                dir: dir.normalize(),
+                dir: specular.normalize(),
+            };
+            let ray_diffuse = Ray {
+                pos: bounce_point,
+                dir: diffuse.normalize(),
             };
 
-            return intersect_spheres(
+            let specular = intersect_spheres(
                 max_bounces,
                 bounce_count + 1,
                 &scene,
                 depth_pass,
                 &spheres,
                 Some(i),
-                &ray,
+                &ray_specular,
                 rng,
-            ) * bounce_sphere.material.color
-                + bounce_sphere.material.emission_color * bounce_sphere.material.emission_intensity;
+            );
+
+            let diffuse = intersect_spheres(
+                max_bounces,
+                bounce_count + 1,
+                &scene,
+                depth_pass,
+                &spheres,
+                Some(i),
+                &ray_diffuse,
+                rng,
+            ) * bounce_sphere.material.color;
+
+            let emission =
+                bounce_sphere.material.emission_color * bounce_sphere.material.emission_intensity;
+
+            let dielectric = specular * fresnel + diffuse * (1.0 - fresnel) + emission;
+
+            return dielectric * (1.0 - metallic)
+                + specular * bounce_sphere.material.color * metallic;
         }
     };
 
