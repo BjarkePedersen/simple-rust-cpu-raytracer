@@ -1,4 +1,4 @@
-# Raytracey-Not-A-Raytracer
+# Simple Rust CPU raytracer
 A simple homebrewed, CPU-powered path tracer. It's not meant to be good path tracer by any means, It's meant to teach me Rust. Feel free to contribute.
 
 ## Controls
