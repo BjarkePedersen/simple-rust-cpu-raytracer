@@ -1,8 +1,7 @@
 use crate::bresenham::Line3d;
 use crate::helpers::{col_to_rgb_u32, Col};
 use cgmath::Vector3;
-
-use rand::prelude::*;
+use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone)]
 pub struct Camera {

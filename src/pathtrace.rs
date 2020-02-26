@@ -5,7 +5,7 @@ use crate::scene::{Ray, Scene, Sphere};
 use crate::skybox::sky_box;
 use cgmath::{dot, InnerSpace, Vector3};
 use ordered_float::OrderedFloat;
-use rand::prelude::*;
+use rand::{Rng, ThreadRng};
 
 // Create ray from camera
 pub fn camera_ray(

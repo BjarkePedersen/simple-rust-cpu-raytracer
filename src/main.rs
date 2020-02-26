@@ -3,7 +3,6 @@ use crate::helpers::*;
 use crate::movement::*;
 use crate::pathtrace::*;
 use crate::scene::*;
-use rand::prelude::*;
 
 mod app;
 mod bresenham;
@@ -16,6 +15,7 @@ mod skybox;
 
 use cgmath::Vector3;
 use minifb::{Key, Window, WindowOptions};
+use rand::thread_rng;
 use rayon::prelude::*;
 
 const WIDTH: usize = 400;
