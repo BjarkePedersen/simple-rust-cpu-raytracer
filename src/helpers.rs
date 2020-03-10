@@ -1,10 +1,7 @@
 use crate::WIDTH;
 use cgmath::Vector3;
-use std::f32;
-use std::ops::Add;
-use std::ops::Div;
-use std::ops::Mul;
-use std::ops::Sub;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::{f32, fmt};
 
 pub fn clamp<T: PartialOrd>(val: T, min: T, max: T) -> T {
     if val < min {
@@ -54,6 +51,26 @@ impl Col {
             r: clamp(self.r, min, max),
             g: clamp(self.r, min, max),
             b: clamp(self.r, min, max),
+        }
+    }
+
+    pub fn luminance(&self) -> f32 {
+        return (self.r + self.g + self.b) / 3.0;
+    }
+
+    pub fn powf(&self, power: f32) -> Col {
+        Col {
+            r: self.r.powf(power),
+            g: self.g.powf(power),
+            b: self.b.powf(power),
+        }
+    }
+
+    pub fn powi(&self, power: i32) -> Col {
+        Col {
+            r: self.r.powi(power),
+            g: self.g.powi(power),
+            b: self.b.powi(power),
         }
     }
 }
@@ -154,6 +171,62 @@ impl Div<Col> for Col {
     }
 }
 
+impl AddAssign for Col {
+    fn add_assign(&mut self, other: Self) {
+        self.r += other.r;
+        self.g += other.g;
+        self.b += other.b;
+    }
+}
+
+impl AddAssign<f32> for Col {
+    fn add_assign(&mut self, other: f32) {
+        *self = *self + other;
+    }
+}
+
+impl SubAssign for Col {
+    fn sub_assign(&mut self, other: Self) {
+        self.r -= other.r;
+        self.g -= other.g;
+        self.b -= other.b;
+    }
+}
+
+impl SubAssign<f32> for Col {
+    fn sub_assign(&mut self, other: f32) {
+        *self = *self - other;
+    }
+}
+
+impl MulAssign for Col {
+    fn mul_assign(&mut self, other: Self) {
+        self.r *= other.r;
+        self.g *= other.g;
+        self.b *= other.b;
+    }
+}
+
+impl MulAssign<f32> for Col {
+    fn mul_assign(&mut self, other: f32) {
+        *self = *self * other;
+    }
+}
+
+impl DivAssign for Col {
+    fn div_assign(&mut self, other: Self) {
+        self.r /= other.r;
+        self.g /= other.g;
+        self.b /= other.b;
+    }
+}
+
+impl DivAssign<f32> for Col {
+    fn div_assign(&mut self, other: f32) {
+        *self = *self / other;
+    }
+}
+
 pub fn mix_col(col1: Col, col2: Col, mix: f32) -> Col {
     col1 * mix + col2 * (1.0 - mix)
 }
@@ -174,7 +247,7 @@ pub fn rgb_u32(r: u32, g: u32, b: u32) -> u32 {
 pub fn uv(index: usize) -> UV {
     UV {
         x: (index % WIDTH as usize) as f32,
-        y: (index as f32 / WIDTH as f32) as f32,
+        y: (index as f32 / WIDTH as f32).floor() as f32,
     }
 }
 
@@ -188,4 +261,42 @@ pub fn length(vector: Vector3<f32>) -> f32 {
 
 pub fn distance(p1: Vector3<f32>, p2: Vector3<f32>) -> f32 {
     length(p2 - p1)
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ObjectID {
+    val: i32,
+}
+
+impl ObjectID {
+    pub fn next(&mut self) -> ObjectID {
+        self.val += 1;
+        return ObjectID::from(self.val);
+    }
+}
+
+impl fmt::Display for ObjectID {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.val)
+    }
+}
+
+impl From<i32> for ObjectID {
+    fn from(w: i32) -> ObjectID {
+        ObjectID { val: w }
+    }
+}
+
+impl PartialEq for ObjectID {
+    fn eq(&self, other: &Self) -> bool {
+        self.val == other.val
+    }
+}
+
+impl Add<i32> for ObjectID {
+    type Output = ObjectID;
+
+    fn add(self, val: i32) -> ObjectID {
+        ObjectID::from(self.val + val)
+    }
 }

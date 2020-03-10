@@ -21,7 +21,7 @@ Toggle depth pass: Enter
 ## Preview
 ![alt text](https://i.imgur.com/Y5f9IJl.png)
 
-## Missing features / To do / wishlist
+## Missing features / To do / Wishlist
   #### Optimization:
   - Inlining
   - Cache optimization

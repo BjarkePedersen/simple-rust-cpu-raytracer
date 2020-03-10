@@ -1,6 +1,8 @@
 use crate::bresenham::Line3d;
+use crate::helpers::ObjectID;
 use crate::helpers::{col_to_rgb_u32, Col};
 use cgmath::Vector3;
+// use rand::prelude::*;
 use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone)]
@@ -10,6 +12,7 @@ pub struct Camera {
     pub fov: f32,
     pub focal_length: f32,
     pub aperture_radius: f32,
+    pub object_id: ObjectID,
 }
 
 #[derive(Debug, Clone)]
@@ -17,6 +20,7 @@ pub struct Sphere {
     pub pos: Vector3<f32>,
     pub radius: f32,
     pub material: Material,
+    pub object_id: ObjectID,
 }
 
 #[derive(Debug, Clone)]
@@ -25,6 +29,7 @@ pub struct Light {
     pub radius: f32,
     pub material: Material,
     pub intensity: f32,
+    pub object_id: ObjectID,
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +41,25 @@ pub struct Sky {
 pub struct Ray {
     pub pos: Vector3<f32>,
     pub dir: Vector3<f32>,
+    pub from_wormhole: bool,
+    pub from_object_id: ObjectID,
+}
+
+#[derive(Debug, Clone)]
+pub struct WormholeParams {
+    pub is_wormhole: bool,
+    pub wormhole_offset: Vector3<f32>,
+    pub other_end_object_id: ObjectID,
+}
+
+impl WormholeParams {
+    fn none() -> WormholeParams {
+        WormholeParams {
+            is_wormhole: false,
+            wormhole_offset: Vector3::new(0.0, 0.0, 0.0),
+            other_end_object_id: ObjectID::from(0),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -45,6 +69,7 @@ pub struct Material {
     pub roughness: f32,
     pub emission_color: Col,
     pub emission_intensity: f32,
+    pub wormhole_params: WormholeParams,
 }
 
 #[derive(Debug, Clone)]
@@ -85,6 +110,8 @@ pub struct Scene {
 pub fn initialize_scene() -> Scene {
     let mut rng = thread_rng();
 
+    let mut object_id = ObjectID::from(0);
+
     let mut scene = Scene {
         cameras: vec![Camera {
             pos: Vector3::new(10.0, -10.0, 10.0),
@@ -92,6 +119,7 @@ pub fn initialize_scene() -> Scene {
             fov: 90.0,
             focal_length: 8.0,
             aperture_radius: 0.015,
+            object_id: object_id.next(),
         }],
         spheres: vec![],
         sky: Sky {
@@ -101,7 +129,8 @@ pub fn initialize_scene() -> Scene {
         wireframes: vec![],
     };
 
-    // Initialize values
+    let wormhole_pos = Vector3::new(0.0, 0.0, 8.0);
+    let wormhole_offset = Vector3::new(-2.0, 12.0, -6.0);
 
     // Spheres
 
@@ -116,7 +145,9 @@ pub fn initialize_scene() -> Scene {
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
         },
         // Origin
         Sphere {
@@ -128,7 +159,9 @@ pub fn initialize_scene() -> Scene {
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
         },
         Sphere {
             pos: Vector3::new(0.0, 2.0, 0.0),
@@ -139,7 +172,9 @@ pub fn initialize_scene() -> Scene {
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
         },
         Sphere {
             pos: Vector3::new(0.0, 0.0, 2.0),
@@ -150,19 +185,60 @@ pub fn initialize_scene() -> Scene {
                 roughness: 1.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
         },
         // Light
         Sphere {
-            pos: Vector3::new(-8.0, 0.0, 2.0),
+            pos: Vector3::new(-6.0, 0.0, 2.0),
             radius: 3.0,
             material: Material {
                 color: Col::new(0.0, 0.0, 0.0),
                 metallic: 0.0,
                 roughness: 1.0,
-                emission_color: Col::new(4.0, 2.0, 1.0),
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                // emission_color: Col::new(4.0, 2.0, 1.0),
                 emission_intensity: 1.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
+        },
+        // Wormhole pt. 1
+        Sphere {
+            pos: wormhole_pos,
+            radius: 2.0,
+            material: Material {
+                color: Col::new(0.0, 0.0, 0.0),
+                metallic: 0.0,
+                roughness: 1.0,
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 1.0,
+                wormhole_params: WormholeParams {
+                    is_wormhole: true,
+                    wormhole_offset: wormhole_offset,
+                    other_end_object_id: object_id.next() + 1,
+                },
+            },
+            object_id: object_id,
+        },
+        // Wormhole pt. 2
+        Sphere {
+            pos: wormhole_pos + wormhole_offset,
+            radius: 2.0,
+            material: Material {
+                color: Col::new(0.0, 0.0, 0.0),
+                metallic: 0.0,
+                roughness: 1.0,
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 1.0,
+                wormhole_params: WormholeParams {
+                    is_wormhole: true,
+                    wormhole_offset: wormhole_offset * -1.0,
+                    other_end_object_id: object_id,
+                },
+            },
+            object_id: object_id.next(),
         },
     ];
     for i in 0..6 {
@@ -175,7 +251,25 @@ pub fn initialize_scene() -> Scene {
                 roughness: (i as f32 / 6.0).powi(2),
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
+        });
+    }
+
+    for i in 0..6 {
+        spheres.push(Sphere {
+            pos: Vector3::new(-7.5 + 2.5 * i as f32, 8.0, -2.0),
+            radius: 1.0,
+            material: Material {
+                color: Col::new(1.0, 1.0, 1.0),
+                metallic: 1.0,
+                roughness: 0.0,
+                emission_color: Col::new(1.0, 1.0, 1.0),
+                emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
+            },
+            object_id: object_id.next(),
         });
     }
 
@@ -199,7 +293,9 @@ pub fn initialize_scene() -> Scene {
                 roughness: 0.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
                 emission_intensity: 0.0,
+                wormhole_params: WormholeParams::none(),
             },
+            object_id: object_id.next(),
         });
     }
     scene.spheres = spheres;

@@ -22,7 +22,7 @@ const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
 
 fn main() {
-    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
+    let mut output_buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
     let mut render_buffer: Vec<(Col)> = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
     let mut window = Window::new("", WIDTH, HEIGHT, WindowOptions::default()).unwrap_or_else(|e| {
         panic!("{}", e);
@@ -105,25 +105,25 @@ fn main() {
                 // Trace ray
                 let col = intersect_spheres(
                     3,
+                    10,
+                    0,
                     0,
                     &scene,
                     viewport.depth_pass,
                     &scene.spheres,
-                    None,
+                    ObjectID::from(0),
                     &ray,
                     &mut rng,
                 );
 
                 // Update render buffer with result
-                pixel.r += col.r.powi(2);
-                pixel.g += col.g.powi(2);
-                pixel.b += col.b.powi(2);
+                *pixel += col.powi(2);
             });
 
         viewport.sample_iter += 1;
 
         // Update frame buffer with render buffer
-        for (col_1, col_2) in render_buffer.iter().zip(buffer.iter_mut()) {
+        for (col_1, col_2) in render_buffer.iter().zip(output_buffer.iter_mut()) {
             let col = Col::new(
                 clamp_max((col_1.r / viewport.sample_iter as f32).sqrt(), 1.0),
                 clamp_max((col_1.g / viewport.sample_iter as f32).sqrt(), 1.0),
@@ -136,11 +136,11 @@ fn main() {
         // Draw overlays
         if viewport.overlays_enabled {
             for wireframe in &mut scene.wireframes {
-                wireframe.render(&mut buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
+                wireframe.render(&mut output_buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
             }
         }
 
         // Update window
-        window.update_with_buffer(&buffer).unwrap();
+        window.update_with_buffer(&output_buffer).unwrap();
     }
 }
