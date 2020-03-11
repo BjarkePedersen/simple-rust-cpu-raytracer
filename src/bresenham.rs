@@ -1,27 +1,21 @@
-use crate::helpers::Col;
+use crate::helpers::{col_to_rgb_u32, Col};
 use crate::scene::Camera;
 use cgmath::{EuclideanSpace, Matrix4, Point3, Vector2, Vector3, Vector4};
 
 pub struct Line2d {
-    pub x0: i32,
-    pub y0: i32,
-    pub x1: i32,
-    pub y1: i32,
+    pub p1: Vector2<i32>,
+    pub p2: Vector2<i32>,
+    pub color: Col,
 }
 
 impl Line2d {
-    pub fn new(x0: i32, y0: i32, x1: i32, y1: i32) -> Line2d {
-        Line2d {
-            x0: x0,
-            y0: y0,
-            x1: x1,
-            y1: y1,
-        }
+    pub fn new(p1: Vector2<i32>, p2: Vector2<i32>, color: Col) -> Line2d {
+        Line2d { p1, p2, color }
     }
 
     pub fn clamp(&self, display_width: usize, display_height: usize) -> Option<Line2d> {
-        let p1 = Vector2::new(self.x0 as f32, self.y0 as f32);
-        let p2 = Vector2::new(self.x1 as f32, self.y1 as f32);
+        let p1: Vector2<f32> = Vector2::new(self.p1.x as f32, self.p1.y as f32);
+        let p2: Vector2<f32> = Vector2::new(self.p2.x as f32, self.p2.y as f32);
 
         // Clamp p1
 
@@ -69,74 +63,83 @@ impl Line2d {
 
         if !(p1.x + p2.x + p1.y + p2.y).is_nan() && !(p1.x + p2.x + p1.y + p2.y).is_infinite() {
             Some(Line2d {
-                x0: p1.x as i32,
-                y0: p1.y as i32,
-                x1: p2.x as i32,
-                y1: p2.y as i32,
+                p1: Vector2::new(p1.x as i32, p1.y as i32),
+                p2: Vector2::new(p2.x as i32, p2.y as i32),
+                color: self.color,
             })
         } else {
             None
         }
     }
-}
 
-fn plot_line(
-    line: Line2d,
-    display_width: &'static usize,
-    display_height: &'static usize,
-) -> impl Iterator<Item = (i32, i32)> {
-    let x0 = line.x0;
-    let y0 = line.y0;
-    let x1 = line.x1;
-    let y1 = line.y1;
+    fn plot(
+        &self,
+        display_width: &'static usize,
+        display_height: &'static usize,
+    ) -> impl Iterator<Item = (i32, i32)> {
+        let x1 = self.p1.x;
+        let y1 = self.p1.y;
+        let x2 = self.p2.x;
+        let y2 = self.p2.y;
 
-    fn plot_line_low(x0: i32, y0: i32, x1: i32, y1: i32) -> impl Iterator<Item = (i32, i32)> {
-        let dx = x1 - x0;
-        let mut dy = y1 - y0;
-        let mut yi = 1;
-
-        if dy < 0 {
-            yi = -1;
-            dy = -dy;
-        }
-        let mut d = 2 * dy - dx;
-        let mut y = y0;
-
-        return (x0..x1).map(move |x| {
-            let coordinates = (x, y);
-            if d > 0 {
-                y = y + yi;
-                d = d - 2 * dx;
+        fn plot_line_low(x1: i32, y1: i32, x2: i32, y2: i32) -> impl Iterator<Item = (i32, i32)> {
+            let dx = x2 - x1;
+            let mut dy = y2 - y1;
+            let mut yi = 1;
+            if dy < 0 {
+                yi = -1;
+                dy = -dy;
             }
-            d = d + 2 * dy;
-            coordinates
-        });
-    };
-
-    let coordinates = if (y1 - y0).abs() < (x1 - x0).abs() {
-        if x0 > x1 {
-            plot_line_low(x1, y1, x0, y0)
-        } else {
-            plot_line_low(x0, y0, x1, y1)
-        }
-    } else {
-        if y0 > y1 {
-            plot_line_low(y1, x1, y0, x0)
-        } else {
-            plot_line_low(y0, x0, y1, x1)
-        }
-    };
-    coordinates
-        .filter(move |(x, y)| {
-            *x < (*display_width as i32) && *x > 0 && *y < (*display_height as i32) && *y > 0
-        })
-        .map(move |(x, y)| {
-            if (y1 - y0).abs() < (x1 - x0).abs() {
-                (x, y)
+            let mut d = 2 * dy - dx;
+            let mut y = y1;
+            return (x1..x2).map(move |x| {
+                let coordinates = (x, y);
+                if d > 0 {
+                    y = y + yi;
+                    d = d - 2 * dx;
+                }
+                d = d + 2 * dy;
+                coordinates
+            });
+        };
+        let coordinates = if (y2 - y1).abs() < (x2 - x1).abs() {
+            if x1 > x2 {
+                plot_line_low(x2, y2, x1, y1)
             } else {
-                (y, x)
+                plot_line_low(x1, y1, x2, y2)
             }
-        })
+        } else {
+            if y1 > y2 {
+                plot_line_low(y2, x2, y1, x1)
+            } else {
+                plot_line_low(y1, x1, y2, x2)
+            }
+        };
+        coordinates
+            .filter(move |(x, y)| {
+                *x < (*display_width as i32) && *x > 0 && *y < (*display_height as i32) && *y > 0
+            })
+            .map(move |(x, y)| {
+                if (y2 - y1).abs() < (x2 - x1).abs() {
+                    (x, y)
+                } else {
+                    (y, x)
+                }
+            })
+    }
+
+    pub fn render(
+        &self,
+        buffer: &mut Vec<u32>,
+        display_width: &'static usize,
+        display_height: &'static usize,
+    ) {
+        for (x, y) in self.plot(display_width, display_height) {
+            let col = col_to_rgb_u32(self.color);
+
+            buffer[display_width * y as usize + (display_width - x as usize)] = col;
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -191,21 +194,52 @@ impl Line3d {
         let half_display_width = *display_width as i32 / 2;
 
         let line = Line2d::new(
-            (half_display_height * coord1.x / coord1.w) as i32 + half_display_width,
-            (half_display_height * coord1.y / coord1.w) as i32 + -half_display_height as i32,
-            (half_display_height * coord2.x / coord2.w) as i32 + half_display_width,
-            (half_display_height * coord2.y / coord2.w) as i32 + -half_display_height as i32,
+            Vector2::new(
+                (half_display_height * coord1.x / coord1.w) as i32 + half_display_width,
+                (half_display_height * coord1.y / coord1.w) as i32 + -half_display_height as i32,
+            ),
+            Vector2::new(
+                (half_display_height * coord2.x / coord2.w) as i32 + half_display_width,
+                (half_display_height * coord2.y / coord2.w) as i32 + -half_display_height as i32,
+            ),
+            self.color,
         )
         .clamp(*display_width, *display_height);
 
         if coord1.w > 0.0 && coord2.w > 0.0 {
             if let Some(line) = line {
-                either::Right(plot_line(line, display_width, display_height))
+                either::Right(line.plot(display_width, display_height))
             } else {
                 either::Left(std::iter::empty())
             }
         } else {
             either::Left(std::iter::empty())
+        }
+    }
+}
+
+pub struct Box {
+    pub points: Vec<Vector2<i32>>,
+    pub color: Col,
+}
+
+impl Box {
+    fn lines(&self) -> Vec<Line2d> {
+        vec![
+            Line2d::new(self.points[0], self.points[1], self.color),
+            Line2d::new(self.points[1], self.points[2], self.color),
+            Line2d::new(self.points[2], self.points[3], self.color),
+            Line2d::new(self.points[3], self.points[0], self.color),
+        ]
+    }
+    pub fn draw(
+        &self,
+        buffer: &mut Vec<u32>,
+        display_width: &'static usize,
+        display_height: &'static usize,
+    ) {
+        for line in self.lines() {
+            line.render(buffer, display_width, display_height);
         }
     }
 }

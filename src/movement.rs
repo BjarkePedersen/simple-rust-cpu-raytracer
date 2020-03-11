@@ -16,7 +16,7 @@ pub fn handle_input(
     window: &mut minifb::Window,
     viewport: &mut Viewport,
     camera: &mut Camera,
-    render_buffer: &mut Vec<(Col)>,
+    render_buffer: &mut Vec<Col>,
     movement: &mut Movement,
     keys_down: &mut Vec<Key>,
     display_width: &usize,

@@ -1,3 +1,4 @@
+#[allow(non_snake_case)]
 use crate::app::*;
 use crate::helpers::*;
 use crate::movement::*;
@@ -23,7 +24,7 @@ const HEIGHT: usize = 400;
 
 fn main() {
     let mut output_buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
-    let mut render_buffer: Vec<(Col)> = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
+    let mut render_buffer: Vec<Col> = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
     let mut window = Window::new("", WIDTH, HEIGHT, WindowOptions::default()).unwrap_or_else(|e| {
         panic!("{}", e);
     });

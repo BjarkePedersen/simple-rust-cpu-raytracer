@@ -1,5 +1,6 @@
+use crate::HEIGHT;
 use crate::WIDTH;
-use cgmath::Vector3;
+use cgmath::{Vector2, Vector3};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{f32, fmt};
 
@@ -241,7 +242,7 @@ pub fn col_to_rgb_u32(rgb: Col) -> u32 {
 
 pub fn rgb_u32(r: u32, g: u32, b: u32) -> u32 {
     let rg = (r << 8) | g;
-    ((rg << 8) | b)
+    (rg << 8) | b
 }
 
 pub fn uv(index: usize) -> UV {
@@ -249,6 +250,10 @@ pub fn uv(index: usize) -> UV {
         x: (index % WIDTH as usize) as f32,
         y: (index as f32 / WIDTH as f32).floor() as f32,
     }
+}
+
+pub fn uv_to_pixel_coordinates(x: f32, y: f32) -> Vector2<i32> {
+    Vector2::new((x * WIDTH as f32) as i32, (y * HEIGHT as f32) as i32)
 }
 
 pub fn rad(deg: f32) -> f32 {

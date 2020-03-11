@@ -2,7 +2,6 @@ use crate::bresenham::Line3d;
 use crate::helpers::ObjectID;
 use crate::helpers::{col_to_rgb_u32, Col};
 use cgmath::Vector3;
-// use rand::prelude::*;
 use rand::{thread_rng, Rng};
 
 #[derive(Debug, Clone)]
@@ -329,7 +328,7 @@ pub fn initialize_scene() -> Scene {
     for l in 0..v_iter as usize {
         for r in 0..h_iter as usize {
             let radius = 1.0;
-            let col = Col::new(0.3, 0.3, 0.3);
+            let col = Col::new(0.5, 0.5, 0.5);
             let t1 = l as f32;
             let t2 = l as f32 + 1.0;
 

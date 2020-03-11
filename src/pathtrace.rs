@@ -128,7 +128,7 @@ pub fn intersect_spheres(
 
     if depth_pass {
         if bounce_count < max_bounces {
-            if let Some((i, distance)) = closest {
+            if let Some((_, distance)) = closest {
                 let d = 1.0 - 1.0 / (distance + 1.0);
                 col = Col::new(d, d, d).clamp(0.0, 1.0);
             }
@@ -183,13 +183,10 @@ pub fn intersect_spheres(
             let wormhole_factor = 1.0 - clamp(1.0 * r0 + (1.0 - r0) * x.powi(2), 0.0, 1.0);
 
             if is_wormhole {
-                let angle: f32 = 0.2;
-                let mut dir = ray.dir;
-
                 let ray = Ray {
                     pos: ray.pos
                         + bounce_sphere.material.wormhole_params.wormhole_offset * wormhole_factor,
-                    dir: dir,
+                    dir: ray.dir,
                     from_wormhole: true,
                     from_object_id: bounce_sphere.object_id.clone(),
                 };

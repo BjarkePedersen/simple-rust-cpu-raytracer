@@ -1,5 +1,5 @@
 [package]
-name = "Simple_Rust_GPU_Raytracer"
+name = "simple_rust_cpu_raytracer"
 version = "0.1.0"
 authors = ["Bjarke Pedersen <contact@bjarke.io>"]
 edition = "2018"
