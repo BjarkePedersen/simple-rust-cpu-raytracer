@@ -184,7 +184,7 @@ pub fn intersect_spheres(
 
             if is_wormhole {
                 let ray = Ray {
-                    pos: ray.pos
+                    pos: bounce_point
                         + bounce_sphere.material.wormhole_params.wormhole_offset * wormhole_factor,
                     dir: ray.dir,
                     from_wormhole: true,
