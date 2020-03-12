@@ -1,5 +1,6 @@
 use crate::helpers::{mix_col, Col};
 use crate::scene::{Ray, Scene};
+use cgmath::InnerSpace;
 
 pub fn sky_box(scene: &Scene, ray: &Ray) -> Col {
     let mut col = mix_col(scene.sky.colors[0], scene.sky.colors[1], ray.dir.z.abs());
@@ -11,21 +12,35 @@ pub fn sky_box(scene: &Scene, ray: &Ray) -> Col {
         }
     }
     let tile_size = 5.0;
-    let secondary_tile_factor = 4.0;
-    let up = (ray.pos.z + 12.0).max(0.0) / tile_size;
+    let secondary_tile_factor = 5.0;
 
-    let big_tiles_x = tile((ray.dir.x * tile_size / ray.dir.z * up - ray.pos.x).cos());
-    let big_tiles_y = tile((ray.dir.y * tile_size / ray.dir.z * up - ray.pos.y).cos());
+    let tile_size = (1.0 / tile_size) * 2.0 * std::f32::consts::PI;
+    let up = (ray.pos.z + 12.0).max(0.0);
+
+    let dir = ray.dir.normalize();
+
+    let big_tiles_x = tile((dir.x / dir.z * tile_size * up - ray.pos.x * tile_size).cos());
+    let big_tiles_y = tile((dir.y / dir.z * tile_size * up - ray.pos.y * tile_size).cos());
     let small_tiles_x = tile(
-        (ray.dir.x * tile_size * secondary_tile_factor / ray.dir.z * up
-            - secondary_tile_factor * ray.pos.x)
+        (dir.x / dir.z * tile_size * secondary_tile_factor * up
+            - ray.pos.x * tile_size * secondary_tile_factor)
             .cos(),
     );
     let small_tiles_y = tile(
-        (ray.dir.y * tile_size * secondary_tile_factor / ray.dir.z * up
-            - secondary_tile_factor * ray.pos.y)
+        (dir.y / dir.z * tile_size * secondary_tile_factor * up
+            - ray.pos.y * tile_size * secondary_tile_factor)
             .cos(),
     );
+    // let small_tiles_x = tile(
+    //     (dir.x * tile_size * secondary_tile_factor / dir.z * up
+    //         - secondary_tile_factor * ray.pos.x)
+    //         .cos(),
+    // );
+    // let small_tiles_y = tile(
+    //     (dir.y * tile_size * secondary_tile_factor / dir.z * up
+    //         - secondary_tile_factor * ray.pos.y)
+    //         .cos(),
+    // );
 
     let ground = mix_col(
         Col::new(0.8, 0.8, 0.8),
@@ -33,7 +48,7 @@ pub fn sky_box(scene: &Scene, ray: &Ray) -> Col {
         big_tiles_x * big_tiles_y * small_tiles_x * small_tiles_y,
     );
 
-    col = mix_col(col, ground, if ray.dir.z > 0.0 { 1.0 } else { 0.0 });
+    col = mix_col(col, ground, if dir.z > 0.0 { 1.0 } else { 0.0 });
 
     return col;
 }

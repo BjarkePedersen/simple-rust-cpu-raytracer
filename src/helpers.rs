@@ -74,6 +74,40 @@ impl Col {
             b: self.b.powi(power),
         }
     }
+
+    pub fn red() -> Col {
+        Col::new(1.0, 0.0, 0.0)
+    }
+    pub fn green() -> Col {
+        Col::new(0.0, 1.0, 0.0)
+    }
+    pub fn blue() -> Col {
+        Col::new(0.0, 0.0, 1.0)
+    }
+    pub fn yellow() -> Col {
+        Col::new(1.0, 1.0, 0.0)
+    }
+    pub fn cyan() -> Col {
+        Col::new(0.0, 1.0, 1.0)
+    }
+    pub fn magenta() -> Col {
+        Col::new(1.0, 0.0, 1.0)
+    }
+    pub fn black() -> Col {
+        Col::new(0.0, 0.0, 0.0)
+    }
+    pub fn white() -> Col {
+        Col::new(1.0, 1.0, 1.0)
+    }
+    pub fn grey() -> Col {
+        Col::new(0.5, 0.5, 0.5)
+    }
+    pub fn light_grey() -> Col {
+        Col::new(0.75, 0.75, 0.75)
+    }
+    pub fn dark_grey() -> Col {
+        Col::new(0.25, 0.25, 0.25)
+    }
 }
 
 impl Add<f32> for Col {

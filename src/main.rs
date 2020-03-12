@@ -1,5 +1,6 @@
 #[allow(non_snake_case)]
 use crate::app::*;
+use crate::bvh::*;
 use crate::helpers::*;
 use crate::movement::*;
 use crate::pathtrace::*;
@@ -7,6 +8,7 @@ use crate::scene::*;
 
 mod app;
 mod bresenham;
+mod bvh;
 mod helpers;
 mod intersect;
 mod movement;
@@ -14,7 +16,7 @@ mod pathtrace;
 mod scene;
 mod skybox;
 
-use cgmath::Vector3;
+use cgmath::{Vector2, Vector3};
 use minifb::{Key, Window, WindowOptions};
 use rand::thread_rng;
 use rayon::prelude::*;
@@ -133,6 +135,22 @@ fn main() {
 
             *col_2 = col_to_rgb_u32(col);
         }
+
+        let d = 0.5;
+        let test_cube = BoundingVolume {
+            points: [
+                Vector3::new(-d, -d, -d),
+                Vector3::new(-d, d, -d),
+                Vector3::new(d, -d, -d),
+                Vector3::new(d, d, -d),
+                Vector3::new(-d, -d, d),
+                Vector3::new(-d, d, d),
+                Vector3::new(d, -d, d),
+                Vector3::new(d, d, d),
+            ],
+        };
+
+        test_cube.draw(&mut output_buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
 
         // Draw overlays
         if viewport.overlays_enabled {

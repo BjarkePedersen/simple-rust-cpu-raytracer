@@ -4,6 +4,12 @@ use crate::helpers::{col_to_rgb_u32, Col};
 use cgmath::Vector3;
 use rand::{thread_rng, Rng};
 
+pub trait WorldObject {
+    fn pos(&self) -> Vector3<f32>;
+
+    fn radius(&self) -> f32;
+}
+
 #[derive(Debug, Clone)]
 pub struct Camera {
     pub pos: Vector3<f32>,
@@ -20,6 +26,15 @@ pub struct Sphere {
     pub radius: f32,
     pub material: Material,
     pub object_id: ObjectID,
+}
+
+impl WorldObject for Sphere {
+    fn pos(&self) -> Vector3<f32> {
+        self.pos
+    }
+    fn radius(&self) -> f32 {
+        self.radius
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -88,13 +103,9 @@ impl Wireframe {
         display_width: &'static usize,
         display_height: &'static usize,
     ) {
-        &self.lines.iter().for_each(|line| {
-            for (x, y) in line.render_line(camera, display_width, display_height) {
-                let col = col_to_rgb_u32(line.color);
-
-                buffer[display_width * y as usize + (display_width - x as usize)] = col;
-            }
-        });
+        for line in self.lines.iter() {
+            line.render(buffer, camera, display_width, display_height);
+        }
     }
 }
 
@@ -306,17 +317,17 @@ pub fn initialize_scene() -> Scene {
     let origin = Wireframe::new(vec![
         Line3d::new(
             Vector3::new(0.0, 0.0, 0.0),
-            Vector3::new(2.0, 0.0, 0.0),
+            Vector3::new(1.0, 0.0, 0.0),
             Col::new(1.0, 0.0, 0.0),
         ),
         Line3d::new(
             Vector3::new(0.0, 0.0, 0.0),
-            Vector3::new(0.0, 2.0, 0.0),
+            Vector3::new(0.0, 1.0, 0.0),
             Col::new(0.0, 1.0, 0.0),
         ),
         Line3d::new(
             Vector3::new(0.0, 0.0, 0.0),
-            Vector3::new(0.0, 0.0, 2.0),
+            Vector3::new(0.0, 0.0, 1.0),
             Col::new(0.1, 0.3, 1.0),
         ),
     ]);

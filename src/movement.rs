@@ -76,8 +76,8 @@ pub fn handle_input(
                     *render_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     viewport.sample_iter = 0;
 
-                    let pos = movement.camera_rotation * movement.camera_movement.extend(0.0);
-                    let pos = pos.truncate();
+                    let pos = (movement.camera_rotation * movement.camera_movement.extend(0.0))
+                        .truncate();
                     camera.pos += pos;
                     camera.focal_length = clamp_min(camera.focal_length, 0.0);
                     camera.aperture_radius = clamp_min(camera.aperture_radius, 0.0);
