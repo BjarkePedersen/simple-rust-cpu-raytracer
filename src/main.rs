@@ -19,7 +19,7 @@ mod skybox;
 
 use cgmath::{Vector2, Vector3};
 use minifb::{Key, Window, WindowOptions};
-use rand::thread_rng;
+use rand::{thread_rng, SeedableRng, StdRng};
 use rayon::prelude::*;
 
 const WIDTH: usize = 400;
@@ -137,20 +137,32 @@ fn main() {
             *col_2 = col_to_rgb_u32(col);
         }
 
-        let d = 6.0;
+        // Construct BVH
         let mut pointers: Vec<&dyn WorldObject> = vec![];
         for sphere in scene.spheres.iter() {
             pointers.push(sphere);
         }
-        let test_cube = construct_bvh(&pointers, pointers.len());
+        let test_cube = construct_bvh(&pointers, pointers.len(), 0);
 
-        test_cube.draw(&mut output_buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
+        let seed: &[_] = &[1, 2, 3, 4];
+        let mut rng: StdRng = SeedableRng::from_seed(seed);
 
         // Draw overlays
         if viewport.overlays_enabled {
+            // Wireframes
             for wireframe in &mut scene.wireframes {
                 wireframe.render(&mut output_buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
             }
+
+            // BVH
+            test_cube.draw(
+                &mut output_buffer,
+                &scene.cameras[0],
+                &WIDTH,
+                &HEIGHT,
+                &mut rng,
+                scene.cameras[0].pos.z as i32,
+            );
         }
 
         // Update window

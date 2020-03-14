@@ -2,6 +2,7 @@ use crate::bresenham::Cube;
 use crate::helpers::Col;
 use crate::scene::{Camera, Sphere, WorldObject};
 use cgmath::Vector3;
+use rand::StdRng;
 
 pub struct BoundingVolume<'a> {
     pub bounds: [Vector3<f32>; 8],
@@ -10,34 +11,63 @@ pub struct BoundingVolume<'a> {
         Option<Box<BoundingVolume<'a>>>,
         Option<Box<BoundingVolume<'a>>>,
     ),
+    pub level: i32,
 }
 
 impl BoundingVolume<'_> {
-    pub fn new<'a>(points: [Vector3<f32>; 8]) -> BoundingVolume<'a> {
+    pub fn new<'a>(
+        bounds: [Vector3<f32>; 8],
+        world_objects: Option<&'a [&'a (dyn WorldObject)]>,
+        children: (
+            Option<Box<BoundingVolume<'a>>>,
+            Option<Box<BoundingVolume<'a>>>,
+        ),
+        level: i32,
+    ) -> BoundingVolume<'a> {
         BoundingVolume {
-            bounds: points,
-            world_objects: None,
-            children: (None, None),
+            bounds,
+            world_objects,
+            children,
+            level,
         }
     }
+
     pub fn draw(
         &self,
         buffer: &mut Vec<u32>,
         camera: &Camera,
         display_width: &'static usize,
         display_height: &'static usize,
+        rng: &mut StdRng,
+        draw_level: i32,
     ) {
         // Draw children
         if let Some(child) = &self.children.0 {
-            child.draw(buffer, camera, display_width, display_height);
+            child.draw(
+                buffer,
+                camera,
+                display_width,
+                display_height,
+                rng,
+                draw_level,
+            );
         }
         if let Some(child) = &self.children.1 {
-            child.draw(buffer, camera, display_width, display_height);
+            child.draw(
+                buffer,
+                camera,
+                display_width,
+                display_height,
+                rng,
+                draw_level,
+            );
         }
 
-        // Create cube from points
-        let cube = Cube::new(self.bounds, Col::red());
-        // println!("\nDrawing BVH for object with points {:?}", self.points);
+        if self.level < draw_level {
+            return;
+        }
+
+        let cube = Cube::new(self.bounds, Col::from_random_hue(rng));
 
         // Draw cube
         cube.draw(buffer, camera, display_width, display_height);
@@ -47,6 +77,7 @@ impl BoundingVolume<'_> {
 pub fn construct_bvh<'a>(
     objects: &'a [&'a (dyn WorldObject)],
     objects_len: usize,
+    level: i32,
 ) -> Box<BoundingVolume<'a>> {
     let bounds = get_bounds(&objects);
     let mid = (objects_len - 1) / 2;
@@ -54,22 +85,23 @@ pub fn construct_bvh<'a>(
     let right_len = objects_len - mid;
     let left_len = objects_len - right_len;
 
-    return Box::new(BoundingVolume {
+    return Box::new(BoundingVolume::new(
         bounds,
-        world_objects: Some(objects),
-        children: (
+        Some(objects),
+        (
             if left_len > 2 {
-                Some(construct_bvh(left, left_len))
+                Some(construct_bvh(left, left_len, level + 1))
             } else {
                 None
             },
             if right_len > 2 {
-                Some(construct_bvh(right, right_len))
+                Some(construct_bvh(right, right_len, level + 1))
             } else {
                 None
             },
         ),
-    });
+        level,
+    ));
 }
 
 pub fn get_bounds<'a>(objects: &'a [&'a (dyn WorldObject)]) -> [Vector3<f32>; 8] {

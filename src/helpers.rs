@@ -1,6 +1,7 @@
 use crate::HEIGHT;
 use crate::WIDTH;
-use cgmath::{Vector2, Vector3};
+use cgmath::{InnerSpace, Vector2, Vector3};
+use rand::{Rng, StdRng};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{f32, fmt};
 
@@ -50,8 +51,8 @@ impl Col {
     pub fn clamp(&self, min: f32, max: f32) -> Col {
         Col {
             r: clamp(self.r, min, max),
-            g: clamp(self.r, min, max),
-            b: clamp(self.r, min, max),
+            g: clamp(self.g, min, max),
+            b: clamp(self.b, min, max),
         }
     }
 
@@ -107,6 +108,20 @@ impl Col {
     }
     pub fn dark_grey() -> Col {
         Col::new(0.25, 0.25, 0.25)
+    }
+    pub fn from_hue(hue: f32) -> Col {
+        let x = 6.0 * (hue % 1.0);
+        let (r, g, b) = if hue < 1.0 / 2.0 {
+            (-(x - 2.0), x, (x - 2.0))
+        } else {
+            ((x - 4.0), -(x - 4.0), -(x - 6.0))
+        };
+        return Col::new(r, g, b).clamp(0.0, 1.0);
+    }
+
+    pub fn from_random_hue(rng: &mut StdRng) -> Col {
+        let val = rng.gen_range(0.0, 1.0);
+        return Col::from_hue(val);
     }
 }
 
@@ -259,6 +274,12 @@ impl DivAssign for Col {
 impl DivAssign<f32> for Col {
     fn div_assign(&mut self, other: f32) {
         *self = *self / other;
+    }
+}
+
+impl fmt::Display for Col {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {}, {})", self.r, self.g, self.b)
     }
 }
 
