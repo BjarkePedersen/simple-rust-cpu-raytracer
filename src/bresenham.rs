@@ -242,14 +242,6 @@ pub struct Polygon2d {
 }
 
 impl Polygon2d {
-    // fn lines(&self) -> Vec<Line2d> {
-    //     vec![
-    //         Line2d::new(self.points[0], self.points[1], self.color),
-    //         Line2d::new(self.points[1], self.points[2], self.color),
-    //         Line2d::new(self.points[2], self.points[3], self.color),
-    //         Line2d::new(self.points[3], self.points[0], self.color),
-    //     ]
-    // }
     pub fn draw(
         &self,
         buffer: &mut Vec<u32>,
@@ -281,7 +273,7 @@ impl Polygon3d {
 }
 
 pub struct Cube {
-    pub segmensts: [Polygon3d; 4],
+    pub segments: [Polygon3d; 4],
 }
 
 impl Cube {
@@ -315,7 +307,7 @@ impl Cube {
             ],
         };
         Cube {
-            segmensts: [segment_1, segment_2, segment_3, segment_4],
+            segments: [segment_1, segment_2, segment_3, segment_4],
         }
     }
     pub fn draw(
@@ -325,7 +317,7 @@ impl Cube {
         display_width: &'static usize,
         display_height: &'static usize,
     ) {
-        for segment in self.segmensts.iter() {
+        for segment in self.segments.iter() {
             segment.draw(buffer, camera, display_width, display_height);
         }
     }

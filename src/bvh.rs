@@ -1,15 +1,25 @@
 use crate::bresenham::Cube;
 use crate::helpers::Col;
-use crate::scene::{Camera, WorldObject};
+use crate::scene::{Camera, Sphere, WorldObject};
 use cgmath::Vector3;
 
-pub struct BoundingVolume {
-    pub points: [Vector3<f32>; 8],
-    // pub child_object: Option<Box<dyn WorldObject>>,
-    // pub child_node: Option<&'a BoundingVolume<'a>>,
+pub struct BoundingVolume<'a> {
+    pub bounds: [Vector3<f32>; 8],
+    pub world_objects: Option<&'a [&'a (dyn WorldObject)]>,
+    pub children: (
+        Option<Box<BoundingVolume<'a>>>,
+        Option<Box<BoundingVolume<'a>>>,
+    ),
 }
 
-impl BoundingVolume {
+impl BoundingVolume<'_> {
+    pub fn new<'a>(points: [Vector3<f32>; 8]) -> BoundingVolume<'a> {
+        BoundingVolume {
+            bounds: points,
+            world_objects: None,
+            children: (None, None),
+        }
+    }
     pub fn draw(
         &self,
         buffer: &mut Vec<u32>,
@@ -17,67 +27,83 @@ impl BoundingVolume {
         display_width: &'static usize,
         display_height: &'static usize,
     ) {
+        // Draw children
+        if let Some(child) = &self.children.0 {
+            child.draw(buffer, camera, display_width, display_height);
+        }
+        if let Some(child) = &self.children.1 {
+            child.draw(buffer, camera, display_width, display_height);
+        }
+
         // Create cube from points
-        let cube = Cube::new(self.points, Col::red());
+        let cube = Cube::new(self.bounds, Col::red());
+        // println!("\nDrawing BVH for object with points {:?}", self.points);
 
         // Draw cube
         cube.draw(buffer, camera, display_width, display_height);
     }
 }
 
-// pub struct Partition2d<'a> {
-//     pub bounds: [Vector2<f32>; 4],
-//     pub child_object: Option<Box<dyn WorldObject>>,
-//     pub child_node: Option<&'a Partition2d<'a>>,
-// }
+pub fn construct_bvh<'a>(
+    objects: &'a [&'a (dyn WorldObject)],
+    objects_len: usize,
+) -> Box<BoundingVolume<'a>> {
+    let bounds = get_bounds(&objects);
+    let mid = (objects_len - 1) / 2;
+    let (left, right) = objects.split_at(mid);
+    let right_len = objects_len - mid;
+    let left_len = objects_len - right_len;
 
-// impl Partition2d<'_> {
-//     pub fn new<'a>(
-//         bounds: [Vector2<f32>; 4],
-//         child_object: Option<Box<dyn WorldObject>>,
-//         child_node: Option<&'a Partition2d<'a>>,
-//     ) -> Partition2d<'a> {
-//         Partition2d {
-//             bounds,
-//             child_object,
-//             child_node,
-//         }
-//     }
+    return Box::new(BoundingVolume {
+        bounds,
+        world_objects: Some(objects),
+        children: (
+            if left_len > 2 {
+                Some(construct_bvh(left, left_len))
+            } else {
+                None
+            },
+            if right_len > 2 {
+                Some(construct_bvh(right, right_len))
+            } else {
+                None
+            },
+        ),
+    });
+}
 
-//     pub fn render(
-//         &self,
-//         buffer: &mut Vec<u32>,
-//         display_width: &'static usize,
-//         display_height: &'static usize,
-//     ) {
-//         // Render all child partitions
-//         if let Some(child_node) = self.child_node {
-//             child_node.render(buffer, display_width, display_height);
-//         }
+pub fn get_bounds<'a>(objects: &'a [&'a (dyn WorldObject)]) -> [Vector3<f32>; 8] {
+    let mut max = [std::f32::MIN, std::f32::MIN, std::f32::MIN];
+    let mut min = [std::f32::MAX, std::f32::MAX, std::f32::MAX];
 
-//         // Render partition
-//         let bounding_box = Polygon {
-//             points: vec![
-//                 uv_to_pixel_coordinates(self.bounds[0].x, self.bounds[0].y),
-//                 uv_to_pixel_coordinates(self.bounds[1].x, self.bounds[1].y),
-//                 uv_to_pixel_coordinates(self.bounds[2].x, self.bounds[2].y),
-//                 uv_to_pixel_coordinates(self.bounds[3].x, self.bounds[3].y),
-//             ],
-//             color: Col::new(1.0, 0.0, 0.0),
-//         };
-//         bounding_box.draw(buffer, display_width, display_height);
-//     }
+    for object in objects.iter() {
+        let pos = object.pos();
+        let pos = [pos.x, pos.y, pos.z];
+        let radius = object.radius();
 
-//     pub fn consilidate(&mut self, objects: &Vec<Box<dyn WorldObject>>, camera: &Camera) {
-//         for object in objects.iter() {
-//             let size = length(object.radius() * (object.pos() - camera.pos));
-//             println!("\n{:?}", camera.pos);
-//             println!("{:?} {}", object.pos(), object.radius());
-//             println!("size: {}", size);
+        for ((pos, max), min) in pos.iter().zip(max.iter_mut()).zip(min.iter_mut()) {
+            let greatest = pos + radius;
+            let least = pos - radius;
+            if greatest > *max {
+                *max = greatest;
+            }
+            if least < *min {
+                *min = least;
+            }
+        }
+    }
 
-//             // TODO: Find coordinates of the object with respect to the frame
-//             // TODO: Create approximate bounding box from coordinates + radius
-//             // TODO: Handle all the tree stuff
-//         }
-//     }
-// }
+    let max = Vector3::new(max[0], max[1], max[2]);
+    let min = Vector3::new(min[0], min[1], min[2]);
+
+    return [
+        Vector3::new(min.x, min.y, min.z),
+        Vector3::new(min.x, max.y, min.z),
+        Vector3::new(max.x, min.y, min.z),
+        Vector3::new(max.x, max.y, min.z),
+        Vector3::new(min.x, min.y, max.z),
+        Vector3::new(min.x, max.y, max.z),
+        Vector3::new(max.x, min.y, max.z),
+        Vector3::new(max.x, max.y, max.z),
+    ];
+}

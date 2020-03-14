@@ -5,14 +5,15 @@ authors = ["Bjarke Pedersen <contact@bjarke.io>"]
 edition = "2018"
 
 [dependencies]
-minifb = "*"
-rgb = "*"
-rand = "*"
-cgmath = "*"
-rayon = "*"
-ordered-float = "*"
-time = "*"
-either = "*"
+cgmath = "0.17.0"
+either = "1.5.0"
+minifb = "0.11.2"
+ordered-float =  "1.0.1"
+rand = "0.3.22"
+rayon = "1.0.3"
+rgb = "0.8.12"
+time = "0.1.42"
+itertools = "0.9.0"
 
 [profile.release]
 opt-level = 3

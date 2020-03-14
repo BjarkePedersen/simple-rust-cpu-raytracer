@@ -1,3 +1,4 @@
+#![feature(box_patterns)]
 #[allow(non_snake_case)]
 use crate::app::*;
 use crate::bvh::*;
@@ -136,19 +137,12 @@ fn main() {
             *col_2 = col_to_rgb_u32(col);
         }
 
-        let d = 0.5;
-        let test_cube = BoundingVolume {
-            points: [
-                Vector3::new(-d, -d, -d),
-                Vector3::new(-d, d, -d),
-                Vector3::new(d, -d, -d),
-                Vector3::new(d, d, -d),
-                Vector3::new(-d, -d, d),
-                Vector3::new(-d, d, d),
-                Vector3::new(d, -d, d),
-                Vector3::new(d, d, d),
-            ],
-        };
+        let d = 6.0;
+        let mut pointers: Vec<&dyn WorldObject> = vec![];
+        for sphere in scene.spheres.iter() {
+            pointers.push(sphere);
+        }
+        let test_cube = construct_bvh(&pointers, pointers.len());
 
         test_cube.draw(&mut output_buffer, &scene.cameras[0], &WIDTH, &HEIGHT);
 

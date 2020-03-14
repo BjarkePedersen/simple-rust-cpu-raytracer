@@ -6,8 +6,8 @@ use rand::{thread_rng, Rng};
 
 pub trait WorldObject {
     fn pos(&self) -> Vector3<f32>;
-
     fn radius(&self) -> f32;
+    fn object_id(&self) -> ObjectID;
 }
 
 #[derive(Debug, Clone)]
@@ -34,6 +34,10 @@ impl WorldObject for Sphere {
     }
     fn radius(&self) -> f32 {
         self.radius
+    }
+
+    fn object_id(&self) -> ObjectID {
+        self.object_id
     }
 }
 
