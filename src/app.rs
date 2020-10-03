@@ -2,6 +2,7 @@ pub struct Viewport {
     pub overlays_enabled: bool,
     pub autofocus: bool,
     pub depth_pass: bool,
+    pub normal_pass: bool,
     pub sample_iter: u32,
     pub time: Time,
 }

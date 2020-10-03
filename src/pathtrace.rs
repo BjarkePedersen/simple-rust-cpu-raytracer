@@ -4,8 +4,10 @@ use crate::movement::Movement;
 use crate::scene::{Ray, Scene, Sphere};
 use crate::skybox::sky_box;
 use cgmath::{dot, InnerSpace, Vector3};
+use cgmath::{EuclideanSpace, Matrix4, Point3, Rotation, Vector2, Vector4};
 use ordered_float::OrderedFloat;
 use rand::{Rng, ThreadRng};
+use std::cmp;
 
 // Create ray from camera
 pub fn camera_ray(
@@ -14,8 +16,8 @@ pub fn camera_ray(
     image_plane_size: f32,
     jitter_size: f32,
     pixel_size: f32,
-    width: usize,
-    height: usize,
+    width: f32,
+    height: f32,
     movement: &Movement,
     rng: &mut ThreadRng,
 ) -> Ray {
@@ -34,13 +36,13 @@ pub fn camera_ray(
     );
 
     let dir = {
-        let uv = uv(width * height - i - 1);
+        let uv = uv(width * height - i as f32 - 1.0, width, height);
 
         Vector3::new(
-            ((uv.x - width as f32 / 2.0) / height as f32) * -image_plane_size
+            ((uv.x * width - width as f32 / 2.0) / height as f32) * -image_plane_size
                 + jitter_x * jitter_size,
             1.0,
-            ((uv.y - height as f32 / 2.0) / height as f32) * image_plane_size
+            ((uv.y * height - height as f32 / 2.0) / height as f32) * image_plane_size
                 + jitter_z * jitter_size,
         ) - aperture_jitter
             + anti_aliasing_jitter
@@ -61,20 +63,20 @@ pub fn camera_ray(
 
 // Create ray from camera with no jittering (used for autofocus)
 pub fn camera_ray_simple(
-    i: usize,
+    i: f32,
     scene: &Scene,
     image_plane_size: f32,
-    width: usize,
-    height: usize,
+    width: f32,
+    height: f32,
     movement: &Movement,
 ) -> Ray {
     let dir = {
-        let uv = uv(width * height - i - 1);
+        let uv = uv(width * height - i - 1.0, width, height);
 
         Vector3::new(
-            ((uv.x - width as f32 / 2.0) / height as f32) * -image_plane_size,
+            ((uv.x * width - width as f32 / 2.0) / height as f32) * -image_plane_size,
             1.0,
-            ((uv.y - height as f32 / 2.0) / height as f32) * image_plane_size,
+            ((uv.y * height - height as f32 / 2.0) / height as f32) * image_plane_size,
         )
     };
 
@@ -95,7 +97,9 @@ pub fn intersect_spheres(
     wormhole_bounce_count: i32,
     scene: &Scene,
     depth_pass: bool,
+    normal_pass: bool,
     spheres: &[Sphere],
+    // spheres: &Vec<Rc<Sphere>>,
     from_object_id: ObjectID,
     ray: &Ray,
     rng: &mut ThreadRng,
@@ -129,11 +133,37 @@ pub fn intersect_spheres(
     if depth_pass {
         if bounce_count < max_bounces {
             if let Some((_, distance)) = closest {
-                let d = 1.0 - 1.0 / (distance + 1.0);
+                let d = 1.0 / (distance + 1.0).sqrt();
                 col = Col::new(d, d, d).clamp(0.0, 1.0);
             }
         }
         return col;
+    } else if normal_pass {
+        // Normal pass
+        if let Some((i, t)) = closest {
+            let bounce_point = ray.pos + ray.dir * t;
+            let bounce_sphere = &spheres[i];
+
+            // Normal at intersection point
+            let n = (bounce_point - bounce_sphere.pos).normalize();
+
+            let camera = &scene.cameras[0];
+            let rot = cgmath::Matrix4::from_angle_z(cgmath::Rad(camera.rot.z))
+                * cgmath::Matrix4::from_angle_y(cgmath::Rad(camera.rot.y))
+                * cgmath::Matrix4::from_angle_x(cgmath::Rad(camera.rot.x));
+
+            let dir = rot * Vector4::new(0.0, 0.0, 1.0, 0.0);
+
+            let dir = Matrix4::look_at_dir(
+                Point3::from_vec(camera.pos),
+                dir.truncate(),
+                Vector3::new(0.0, 0.0, 1.0),
+            );
+            let normal = (dir * n.extend(0.0)).truncate();
+            col = Col::new(normal.x, normal.z, 0.0);
+
+            return col;
+        }
     }
 
     // Bounce:
@@ -198,6 +228,7 @@ pub fn intersect_spheres(
                     wormhole_bounce_count + 1,
                     &scene,
                     depth_pass,
+                    normal_pass,
                     &spheres,
                     bounce_sphere.object_id,
                     &ray,
@@ -226,6 +257,7 @@ pub fn intersect_spheres(
                     wormhole_bounce_count,
                     &scene,
                     depth_pass,
+                    normal_pass,
                     &spheres,
                     bounce_sphere.object_id,
                     &ray_specular,
@@ -239,6 +271,7 @@ pub fn intersect_spheres(
                     wormhole_bounce_count,
                     &scene,
                     depth_pass,
+                    normal_pass,
                     &spheres,
                     bounce_sphere.object_id,
                     &ray_diffuse,
@@ -268,6 +301,7 @@ pub fn intersect_spheres(
                     wormhole_bounce_count,
                     &scene,
                     depth_pass,
+                    normal_pass,
                     &spheres,
                     bounce_sphere.object_id,
                     &ray_specular,

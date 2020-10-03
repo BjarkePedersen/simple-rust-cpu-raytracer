@@ -3,8 +3,12 @@ use crate::helpers::ObjectID;
 use crate::helpers::{col_to_rgb_u32, Col};
 use cgmath::Vector3;
 use rand::{thread_rng, Rng};
+use std::rc::Rc;
 
 pub trait WorldObject {
+    fn new(pos: Vector3<f32>, radius: f32, material: Material, object_id: ObjectID) -> Self
+    where
+        Self: Sized;
     fn pos(&self) -> Vector3<f32>;
     fn radius(&self) -> f32;
     fn object_id(&self) -> ObjectID;
@@ -29,6 +33,15 @@ pub struct Sphere {
 }
 
 impl WorldObject for Sphere {
+    fn new(pos: Vector3<f32>, radius: f32, material: Material, object_id: ObjectID) -> Sphere {
+        Sphere {
+            pos,
+            radius,
+            material,
+            object_id,
+        }
+    }
+
     fn pos(&self) -> Vector3<f32> {
         self.pos
     }
@@ -117,6 +130,7 @@ impl Wireframe {
 pub struct Scene {
     pub cameras: Vec<Camera>,
     pub spheres: Vec<Sphere>,
+    // pub spheres: Vec<Rc<Sphere>>,
     pub sky: Sky,
     pub wireframes: Vec<Wireframe>,
 }
@@ -151,6 +165,7 @@ pub fn initialize_scene() -> Scene {
     let mut spheres = vec![
         // Wireframe sphere
         Sphere {
+            // Rc::new(Sphere {
             pos: Vector3::new(10.0, 2.0, 1.0),
             radius: 1.0,
             material: Material {
@@ -165,6 +180,7 @@ pub fn initialize_scene() -> Scene {
         },
         // Origin
         Sphere {
+            // Rc::new(Sphere {
             pos: Vector3::new(2.0, 0.0, 0.0),
             radius: 0.3,
             material: Material {
@@ -178,6 +194,7 @@ pub fn initialize_scene() -> Scene {
             object_id: object_id.next(),
         },
         Sphere {
+            // Rc::new(Sphere {
             pos: Vector3::new(0.0, 2.0, 0.0),
             radius: 0.3,
             material: Material {
@@ -191,6 +208,7 @@ pub fn initialize_scene() -> Scene {
             object_id: object_id.next(),
         },
         Sphere {
+            // Rc::new(Sphere {
             pos: Vector3::new(0.0, 0.0, 2.0),
             radius: 0.3,
             material: Material {
@@ -205,6 +223,7 @@ pub fn initialize_scene() -> Scene {
         },
         // Light
         Sphere {
+            // Rc::new(Sphere {
             pos: Vector3::new(-6.0, 0.0, 2.0),
             radius: 3.0,
             material: Material {
@@ -220,6 +239,7 @@ pub fn initialize_scene() -> Scene {
         },
         // Wormhole pt. 1
         Sphere {
+            // Rc::new(Sphere {
             pos: wormhole_pos,
             radius: 2.0,
             material: Material {
@@ -238,6 +258,7 @@ pub fn initialize_scene() -> Scene {
         },
         // Wormhole pt. 2
         Sphere {
+            // Rc::new(Sphere {
             pos: wormhole_pos + wormhole_offset,
             radius: 2.0,
             material: Material {
@@ -257,6 +278,7 @@ pub fn initialize_scene() -> Scene {
     ];
     for i in 0..6 {
         spheres.push(Sphere {
+            // spheres.push(Rc::new(Sphere {
             pos: Vector3::new(-7.5 + 2.5 * i as f32, 8.0, 1.0),
             radius: 1.0,
             material: Material {
@@ -273,6 +295,7 @@ pub fn initialize_scene() -> Scene {
 
     for i in 0..6 {
         spheres.push(Sphere {
+            // spheres.push(Rc::new(Sphere {
             pos: Vector3::new(-7.5 + 2.5 * i as f32, 8.0, -2.0),
             radius: 1.0,
             material: Material {
@@ -291,6 +314,7 @@ pub fn initialize_scene() -> Scene {
         let rnd = rng.gen_range(0.0, 1.0);
 
         spheres.push(Sphere {
+            // spheres.push(Rc::new(Sphere {
             pos: Vector3::new(
                 rng.gen_range(-5.0, 5.0),
                 rng.gen_range(-5.0, 5.0),

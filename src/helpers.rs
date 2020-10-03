@@ -1,6 +1,4 @@
-use crate::HEIGHT;
-use crate::WIDTH;
-use cgmath::{InnerSpace, Vector2, Vector3};
+use cgmath::{Vector2, Vector3};
 use rand::{Rng, StdRng};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{f32, fmt};
@@ -300,15 +298,15 @@ pub fn rgb_u32(r: u32, g: u32, b: u32) -> u32 {
     (rg << 8) | b
 }
 
-pub fn uv(index: usize) -> UV {
+pub fn uv(index: f32, width: f32, height: f32) -> UV {
     UV {
-        x: (index % WIDTH as usize) as f32,
-        y: (index as f32 / WIDTH as f32).floor() as f32,
+        x: (index % width) as f32 / width as f32,
+        y: (index / width) as f32 / height as f32,
     }
 }
 
-pub fn uv_to_pixel_coordinates(x: f32, y: f32) -> Vector2<i32> {
-    Vector2::new((x * WIDTH as f32) as i32, (y * HEIGHT as f32) as i32)
+pub fn uv_to_pixel_coordinates(uv: UV, width: f32, height: f32) -> Vector2<i32> {
+    Vector2::new((uv.x * width) as i32, (uv.y * height) as i32)
 }
 
 pub fn rad(deg: f32) -> f32 {
@@ -358,5 +356,48 @@ impl Add<i32> for ObjectID {
 
     fn add(self, val: i32) -> ObjectID {
         ObjectID::from(self.val + val)
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Axis {
+    axis: usize,
+    dimensions: usize,
+}
+
+impl Into<usize> for Axis {
+    fn into(self) -> usize {
+        self.axis
+    }
+}
+
+impl Axis {
+    pub fn new(dimensions: usize) -> Axis {
+        Axis {
+            axis: 0,
+            dimensions,
+        }
+    }
+    pub fn next(&self) -> Axis {
+        Axis {
+            axis: (self.axis + 1) % self.dimensions,
+            dimensions: self.dimensions,
+        }
+    }
+
+    fn char(self) -> char {
+        match self.into() {
+            0 => 'x',
+            1 => 'y',
+            2 => 'z',
+            3 => 't',
+            _ => '?',
+        }
+    }
+}
+
+impl fmt::Display for Axis {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.char())
     }
 }

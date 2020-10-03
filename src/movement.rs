@@ -110,6 +110,16 @@ pub fn handle_input(
                         viewport.sample_iter = 0;
                     }
                 }
+
+                // Toggle normal pass
+                Key::Backspace => {
+                    if !keys_down.contains(&key) {
+                        viewport.normal_pass = !viewport.normal_pass;
+                        *render_buffer =
+                            vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
+                        viewport.sample_iter = 0;
+                    }
+                }
                 _ => (),
             };
         }
@@ -168,15 +178,15 @@ pub fn handle_input(
 
 pub fn autofocus(
     autofocus: bool,
-    width: usize,
-    height: usize,
+    width: f32,
+    height: f32,
     scene: &mut Scene,
     image_plane_size: f32,
     movement: &Movement,
 ) {
     if autofocus {
         let focus_probe = camera_ray_simple(
-            width * height / 2 - width / 2,
+            width * height / 2.0 - width / 2.0,
             scene,
             image_plane_size,
             width,

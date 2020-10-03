@@ -1,4 +1,5 @@
-#![feature(box_patterns)]
+#![feature(impl_trait_in_bindings)]
+#![feature(iter_partition_in_place)]
 #[allow(non_snake_case)]
 use crate::app::*;
 use crate::bvh::*;
@@ -6,6 +7,7 @@ use crate::helpers::*;
 use crate::movement::*;
 use crate::pathtrace::*;
 use crate::scene::*;
+use std::rc::Rc;
 
 mod app;
 mod bresenham;
@@ -38,6 +40,7 @@ fn main() {
         overlays_enabled: true,
         autofocus: true,
         depth_pass: false,
+        normal_pass: false,
         sample_iter: 0,
         time: Time {
             prev: app::timestamp(),
@@ -75,8 +78,8 @@ fn main() {
 
         autofocus(
             viewport.autofocus,
-            WIDTH,
-            HEIGHT,
+            WIDTH as f32,
+            HEIGHT as f32,
             &mut scene,
             image_plane_size,
             &movement,
@@ -100,8 +103,8 @@ fn main() {
                     image_plane_size,
                     jitter_size,
                     pixel_size,
-                    WIDTH,
-                    HEIGHT,
+                    WIDTH as f32,
+                    HEIGHT as f32,
                     &movement,
                     &mut rng,
                 );
@@ -114,6 +117,7 @@ fn main() {
                     0,
                     &scene,
                     viewport.depth_pass,
+                    viewport.normal_pass,
                     &scene.spheres,
                     ObjectID::from(0),
                     &ray,
@@ -138,14 +142,16 @@ fn main() {
         }
 
         // Construct BVH
-        let mut pointers: Vec<&dyn WorldObject> = vec![];
-        for sphere in scene.spheres.iter() {
-            pointers.push(sphere);
-        }
-        let test_cube = construct_bvh(&pointers, pointers.len(), 0);
+        // let mut pointers: Vec<Rc<dyn WorldObject>> = vec![];
+        // // let mut pointers: Vec<&Box<dyn WorldObject>> = vec![];
+        // // let mut pointers: Vec<Box<&dyn WorldObject>> = vec![];
+        // for sphere in scene.spheres.iter() {
+        //     pointers.push(Rc::clone(&Rc::from(WorldObject::from(sphere))));
+        // }
+        // let test_cube = construct_bvh(pointers, 0, Axis::new(3));
 
-        let seed: &[_] = &[1, 2, 3, 4];
-        let mut rng: StdRng = SeedableRng::from_seed(seed);
+        // let seed: &[_] = &[1, 2, 3, 4];
+        // let mut rng: StdRng = SeedableRng::from_seed(seed);
 
         // Draw overlays
         if viewport.overlays_enabled {
@@ -155,14 +161,14 @@ fn main() {
             }
 
             // BVH
-            test_cube.draw(
-                &mut output_buffer,
-                &scene.cameras[0],
-                &WIDTH,
-                &HEIGHT,
-                &mut rng,
-                scene.cameras[0].pos.z as i32,
-            );
+            // test_cube.draw(
+            //     &mut output_buffer,
+            //     &scene.cameras[0],
+            //     &WIDTH,
+            //     &HEIGHT,
+            //     &mut rng,
+            //     scene.cameras[0].pos.z as i32,
+            // );
         }
 
         // Update window
