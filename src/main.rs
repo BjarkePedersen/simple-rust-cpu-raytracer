@@ -1,4 +1,3 @@
-#[allow(non_snake_case)]
 use crate::app::*;
 use crate::helpers::*;
 use crate::movement::*;
@@ -35,6 +34,7 @@ fn main() {
         overlays_enabled: true,
         autofocus: true,
         depth_pass: false,
+        normal_pass: false,
         sample_iter: 0,
         time: Time {
             prev: app::timestamp(),
@@ -72,8 +72,8 @@ fn main() {
 
         autofocus(
             viewport.autofocus,
-            WIDTH,
-            HEIGHT,
+            WIDTH as f32,
+            HEIGHT as f32,
             &mut scene,
             image_plane_size,
             &movement,
@@ -97,8 +97,8 @@ fn main() {
                     image_plane_size,
                     jitter_size,
                     pixel_size,
-                    WIDTH,
-                    HEIGHT,
+                    WIDTH as f32,
+                    HEIGHT as f32,
                     &movement,
                     &mut rng,
                 );
@@ -111,6 +111,7 @@ fn main() {
                     0,
                     &scene,
                     viewport.depth_pass,
+                    viewport.normal_pass,
                     &scene.spheres,
                     ObjectID::from(0),
                     &ray,

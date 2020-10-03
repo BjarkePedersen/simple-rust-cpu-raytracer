@@ -1,6 +1,5 @@
-use crate::HEIGHT;
-use crate::WIDTH;
 use cgmath::{Vector2, Vector3};
+use rand::{Rng, StdRng};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{f32, fmt};
 
@@ -50,8 +49,8 @@ impl Col {
     pub fn clamp(&self, min: f32, max: f32) -> Col {
         Col {
             r: clamp(self.r, min, max),
-            g: clamp(self.r, min, max),
-            b: clamp(self.r, min, max),
+            g: clamp(self.g, min, max),
+            b: clamp(self.b, min, max),
         }
     }
 
@@ -73,6 +72,54 @@ impl Col {
             g: self.g.powi(power),
             b: self.b.powi(power),
         }
+    }
+
+    pub fn red() -> Col {
+        Col::new(1.0, 0.0, 0.0)
+    }
+    pub fn green() -> Col {
+        Col::new(0.0, 1.0, 0.0)
+    }
+    pub fn blue() -> Col {
+        Col::new(0.0, 0.0, 1.0)
+    }
+    pub fn yellow() -> Col {
+        Col::new(1.0, 1.0, 0.0)
+    }
+    pub fn cyan() -> Col {
+        Col::new(0.0, 1.0, 1.0)
+    }
+    pub fn magenta() -> Col {
+        Col::new(1.0, 0.0, 1.0)
+    }
+    pub fn black() -> Col {
+        Col::new(0.0, 0.0, 0.0)
+    }
+    pub fn white() -> Col {
+        Col::new(1.0, 1.0, 1.0)
+    }
+    pub fn grey() -> Col {
+        Col::new(0.5, 0.5, 0.5)
+    }
+    pub fn light_grey() -> Col {
+        Col::new(0.75, 0.75, 0.75)
+    }
+    pub fn dark_grey() -> Col {
+        Col::new(0.25, 0.25, 0.25)
+    }
+    pub fn from_hue(hue: f32) -> Col {
+        let x = 6.0 * (hue % 1.0);
+        let (r, g, b) = if hue < 1.0 / 2.0 {
+            (-(x - 2.0), x, (x - 2.0))
+        } else {
+            ((x - 4.0), -(x - 4.0), -(x - 6.0))
+        };
+        return Col::new(r, g, b).clamp(0.0, 1.0);
+    }
+
+    pub fn from_random_hue(rng: &mut StdRng) -> Col {
+        let val = rng.gen_range(0.0, 1.0);
+        return Col::from_hue(val);
     }
 }
 
@@ -228,6 +275,12 @@ impl DivAssign<f32> for Col {
     }
 }
 
+impl fmt::Display for Col {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {}, {})", self.r, self.g, self.b)
+    }
+}
+
 pub fn mix_col(col1: Col, col2: Col, mix: f32) -> Col {
     col1 * mix + col2 * (1.0 - mix)
 }
@@ -245,15 +298,15 @@ pub fn rgb_u32(r: u32, g: u32, b: u32) -> u32 {
     (rg << 8) | b
 }
 
-pub fn uv(index: usize) -> UV {
+pub fn uv(index: f32, width: f32, height: f32) -> UV {
     UV {
-        x: (index % WIDTH as usize) as f32,
-        y: (index as f32 / WIDTH as f32).floor() as f32,
+        x: (index % width) as f32 / width as f32,
+        y: (index / width) as f32 / height as f32,
     }
 }
 
-pub fn uv_to_pixel_coordinates(x: f32, y: f32) -> Vector2<i32> {
-    Vector2::new((x * WIDTH as f32) as i32, (y * HEIGHT as f32) as i32)
+pub fn uv_to_pixel_coordinates(uv: UV, width: f32, height: f32) -> Vector2<i32> {
+    Vector2::new((uv.x * width) as i32, (uv.y * height) as i32)
 }
 
 pub fn rad(deg: f32) -> f32 {
@@ -303,5 +356,48 @@ impl Add<i32> for ObjectID {
 
     fn add(self, val: i32) -> ObjectID {
         ObjectID::from(self.val + val)
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Axis {
+    axis: usize,
+    dimensions: usize,
+}
+
+impl Into<usize> for Axis {
+    fn into(self) -> usize {
+        self.axis
+    }
+}
+
+impl Axis {
+    pub fn new(dimensions: usize) -> Axis {
+        Axis {
+            axis: 0,
+            dimensions,
+        }
+    }
+    pub fn next(&self) -> Axis {
+        Axis {
+            axis: (self.axis + 1) % self.dimensions,
+            dimensions: self.dimensions,
+        }
+    }
+
+    fn char(self) -> char {
+        match self.into() {
+            0 => 'x',
+            1 => 'y',
+            2 => 'z',
+            3 => 't',
+            _ => '?',
+        }
+    }
+}
+
+impl fmt::Display for Axis {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.char())
     }
 }

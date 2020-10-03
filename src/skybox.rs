@@ -1,5 +1,6 @@
 use crate::helpers::{mix_col, Col};
 use crate::scene::{Ray, Scene};
+use std::cmp::Ord;
 
 pub fn sky_box(scene: &Scene, ray: &Ray) -> Col {
     let mut col = mix_col(scene.sky.colors[0], scene.sky.colors[1], ray.dir.z.abs());

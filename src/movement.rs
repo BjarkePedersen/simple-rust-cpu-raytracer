@@ -76,8 +76,8 @@ pub fn handle_input(
                     *render_buffer = vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                     viewport.sample_iter = 0;
 
-                    let pos = movement.camera_rotation * movement.camera_movement.extend(0.0);
-                    let pos = pos.truncate();
+                    let pos = (movement.camera_rotation * movement.camera_movement.extend(0.0))
+                        .truncate();
                     camera.pos += pos;
                     camera.focal_length = clamp_min(camera.focal_length, 0.0);
                     camera.aperture_radius = clamp_min(camera.aperture_radius, 0.0);
@@ -105,6 +105,16 @@ pub fn handle_input(
                 Key::Enter => {
                     if !keys_down.contains(&key) {
                         viewport.depth_pass = !viewport.depth_pass;
+                        *render_buffer =
+                            vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
+                        viewport.sample_iter = 0;
+                    }
+                }
+
+                // Toggle normal pass
+                Key::Backspace => {
+                    if !keys_down.contains(&key) {
+                        viewport.normal_pass = !viewport.normal_pass;
                         *render_buffer =
                             vec![Col::new(0.0, 0.0, 0.0); display_width * display_height];
                         viewport.sample_iter = 0;
@@ -168,15 +178,15 @@ pub fn handle_input(
 
 pub fn autofocus(
     autofocus: bool,
-    width: usize,
-    height: usize,
+    width: f32,
+    height: f32,
     scene: &mut Scene,
     image_plane_size: f32,
     movement: &Movement,
 ) {
     if autofocus {
         let focus_probe = camera_ray_simple(
-            width * height / 2 - width / 2,
+            width * height / 2.0 - width / 2.0,
             scene,
             image_plane_size,
             width,
