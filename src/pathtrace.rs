@@ -19,14 +19,20 @@ pub fn camera_ray(
     height: f32,
     movement: &Movement,
     rng: &mut ThreadRng,
-) -> Ray {
+    chromatic_aberration_strength: f32,
+) -> (Ray, f32) {
     let jitter_angle = rng.gen_range(0.0, 1.0) * std::f32::consts::PI * 2.0;
     let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt();
     let jitter_x = jitter_length * jitter_angle.cos();
     let jitter_z = jitter_length * jitter_angle.sin();
 
+    
     let aperture_jitter =
-        Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_radius;
+    Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_radius;
+    
+    let chromatic_aberration_jitter_length: f32 = rng.gen_range(-1.0, 1.0);
+    let chromatic_aberration_jitter =
+        Vector3::new(0.0, chromatic_aberration_jitter_length * chromatic_aberration_strength, 0.0);
 
     let anti_aliasing_jitter = Vector3::new(
         rng.gen_range(-1.0, 1.0) * pixel_size,
@@ -49,15 +55,15 @@ pub fn camera_ray(
 
     let dir = (movement.camera_rotation * dir.extend(0.0)).truncate();
 
-    let combined_jitter = aperture_jitter + anti_aliasing_jitter;
+    let combined_jitter = aperture_jitter + anti_aliasing_jitter + chromatic_aberration_jitter;
     let combined_jitter = (movement.camera_rotation * combined_jitter.extend(0.0)).truncate();
 
-    return Ray {
+    return (Ray {
         pos: scene.cameras[0].pos + combined_jitter,
         dir: dir.normalize(),
         from_wormhole: false,
         from_object_id: ObjectID::from(0),
-    };
+    },chromatic_aberration_jitter_length);
 }
 
 // Create ray from camera with no jittering (used for autofocus)

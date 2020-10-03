@@ -21,6 +21,8 @@ use rayon::prelude::*;
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
 
+const CHROMATIC_ABERRATION_STRENGTH: f32 = 0.0;
+
 fn main() {
     let mut output_buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
     let mut render_buffer: Vec<Col> = vec![Col::new(0.0, 0.0, 0.0); WIDTH * HEIGHT];
@@ -91,7 +93,7 @@ fn main() {
             .for_each(|(i, pixel)| {
                 let mut rng = thread_rng();
                 // Create ray from camera
-                let ray = camera_ray(
+                let (ray, chromatic_aberration_len) = camera_ray(
                     i,
                     &scene,
                     image_plane_size,
@@ -101,6 +103,7 @@ fn main() {
                     HEIGHT as f32,
                     &movement,
                     &mut rng,
+                    CHROMATIC_ABERRATION_STRENGTH
                 );
 
                 // Trace ray
@@ -118,8 +121,13 @@ fn main() {
                     &mut rng,
                 );
 
+                if CHROMATIC_ABERRATION_STRENGTH > 0.0 {
+                    let cr = chromatic_aberration_len/2.0 + 0.5;
+                    let col = col * Col::from_hue(cr) * (1.0 / Col::from_hue(cr).luminance());
+                }
+                
                 // Update render buffer with result
-                *pixel += col.powi(2);
+                *pixel += col;
             });
 
         viewport.sample_iter += 1;
@@ -127,9 +135,9 @@ fn main() {
         // Update frame buffer with render buffer
         for (col_1, col_2) in render_buffer.iter().zip(output_buffer.iter_mut()) {
             let col = Col::new(
-                clamp_max((col_1.r / viewport.sample_iter as f32).sqrt(), 1.0),
-                clamp_max((col_1.g / viewport.sample_iter as f32).sqrt(), 1.0),
-                clamp_max((col_1.b / viewport.sample_iter as f32).sqrt(), 1.0),
+                clamp_max(col_1.r / viewport.sample_iter as f32, 1.0),
+                clamp_max(col_1.g / viewport.sample_iter as f32, 1.0),
+                clamp_max(col_1.b / viewport.sample_iter as f32, 1.0),
             );
 
             *col_2 = col_to_rgb_u32(col);
