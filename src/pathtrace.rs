@@ -6,7 +6,8 @@ use crate::skybox::sky_box;
 use cgmath::{dot, InnerSpace, Vector3};
 use cgmath::{EuclideanSpace, Matrix4, Point3, Vector4};
 use ordered_float::OrderedFloat;
-use rand::{Rng, ThreadRng};
+use rand::Rng;
+use rand::prelude::ThreadRng;
 
 // Create ray from camera
 pub fn camera_ray(
@@ -21,8 +22,8 @@ pub fn camera_ray(
     rng: &mut ThreadRng,
     chromatic_aberration_strength: f32,
 ) -> (Ray, f32) {
-    let jitter_angle = rng.gen_range(0.0, 1.0) * std::f32::consts::PI * 2.0;
-    let jitter_length = (rng.gen_range(0.0, 1.0) as f32).sqrt();
+    let jitter_angle = rng.gen_range(0.0..1.0) * std::f32::consts::PI * 2.0;
+    let jitter_length = (rng.gen_range(0.0..1.0) as f32).sqrt();
     let jitter_x = jitter_length * jitter_angle.cos();
     let jitter_z = jitter_length * jitter_angle.sin();
 
@@ -30,14 +31,14 @@ pub fn camera_ray(
     let aperture_jitter =
     Vector3::new(jitter_x, 0.0, jitter_z) * 2.0 * scene.cameras[0].aperture_radius;
     
-    let chromatic_aberration_jitter_length: f32 = rng.gen_range(-1.0, 1.0);
+    let chromatic_aberration_jitter_length: f32 = rng.gen_range(-1.0..1.0);
     let chromatic_aberration_jitter =
         Vector3::new(0.0, chromatic_aberration_jitter_length * chromatic_aberration_strength, 0.0);
 
     let anti_aliasing_jitter = Vector3::new(
-        rng.gen_range(-1.0, 1.0) * pixel_size,
+        rng.gen_range(-1.0..1.0) * pixel_size,
         0.0,
-        rng.gen_range(-1.0, 1.0) * pixel_size,
+        rng.gen_range(-1.0..1.0) * pixel_size,
     );
 
     let dir = {
@@ -207,9 +208,9 @@ pub fn intersect_spheres(
 
             // BRDF
             let diffuse = n + Vector3::new(
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
-                rng.gen_range(-0.5, 0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5..0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5..0.5) * std::f32::consts::PI,
+                rng.gen_range(-0.5..0.5) * std::f32::consts::PI,
             );
 
             let specular = diffuse * roughness + specular * (1.0 - roughness);

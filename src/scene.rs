@@ -274,20 +274,20 @@ pub fn initialize_scene() -> Scene {
     }
 
     for _ in 0..50 {
-        let rnd = rng.gen_range(0.0, 1.0);
+        let rnd = rng.gen_range(0.0..1.0);
 
         spheres.push(Sphere {
             pos: Vector3::new(
-                rng.gen_range(-5.0, 5.0),
-                rng.gen_range(-5.0, 5.0),
-                rng.gen_range(-5.0, 5.0),
+                rng.gen_range(-5.0..5.0),
+                rng.gen_range(-5.0..5.0),
+                rng.gen_range(-5.0..5.0),
             ),
-            radius: rng.gen_range(0.5, 1.0),
+            radius: rng.gen_range(0.5..1.0),
             material: Material {
                 color: Col::new(
-                    rng.gen_range(0.0, 1.0),
-                    rng.gen_range(0.0, 1.0),
-                    rng.gen_range(0.0, 1.0),
+                    rng.gen_range(0.0..1.0),
+                    rng.gen_range(0.0..1.0),
+                    rng.gen_range(0.0..1.0),
                 ),
                 metallic: if rnd < 0.5 { 0.0 } else { 1.0 },
                 roughness: 0.0,
@@ -303,9 +303,9 @@ pub fn initialize_scene() -> Scene {
 
         spheres.push(Sphere {
             pos: Vector3::new(
-                rng.gen_range(15.0, 25.0),
-                rng.gen_range(-5.0, 5.0),
-                rng.gen_range(-5.0, 5.0),
+                rng.gen_range(15.0..25.0),
+                rng.gen_range(-5.0..5.0),
+                rng.gen_range(-5.0..5.0),
             ),
             radius: 0.1,
             material: Material {
@@ -313,7 +313,7 @@ pub fn initialize_scene() -> Scene {
                 metallic: 0.0,
                 roughness: 0.0,
                 emission_color: Col::new(1.0, 1.0, 1.0),
-                emission_intensity: rng.gen_range(1.0, 2.5),
+                emission_intensity: rng.gen_range(1.0..2.5),
                 wormhole_params: WormholeParams::none(),
             },
             object_id: object_id.next(),

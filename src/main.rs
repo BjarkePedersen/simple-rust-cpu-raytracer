@@ -17,6 +17,7 @@ use cgmath::Vector3;
 use minifb::{Key, Window, WindowOptions};
 use rand::thread_rng;
 use rayon::prelude::*;
+use std::time::{Instant, Duration};
 
 const WIDTH: usize = 400;
 const HEIGHT: usize = 400;
@@ -39,8 +40,9 @@ fn main() {
         normal_pass: false,
         sample_iter: 0,
         time: Time {
+            start: Instant::now(),
             prev: app::timestamp(),
-            sum: 0.0,
+            sum: Duration::new(0,0),
             framecount: 0,
         },
     };
@@ -151,6 +153,6 @@ fn main() {
         }
 
         // Update window
-        window.update_with_buffer(&output_buffer).unwrap();
+        window.update_with_buffer(&output_buffer, WIDTH, HEIGHT).unwrap();
     }
 }

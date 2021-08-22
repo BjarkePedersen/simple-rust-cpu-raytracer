@@ -5,17 +5,17 @@ authors = ["Bjarke Pedersen <contact@bjarke.io>"]
 edition = "2018"
 
 [dependencies]
-minifb = "*"
-rgb = "*"
-rand = "*"
-cgmath = "*"
-rayon = "*"
-ordered-float = "*"
-time = "*"
-either = "*"
+minifb = "0.19.3"
+rgb = "0.8.27"
+rand = "0.8.4"
+cgmath = "0.18.0"
+rayon = "1.5.1"
+ordered-float = "2.7.0"
+time = "0.3.1"
+either = "1.6.1"
 
-[profile.release]
-opt-level = 3
-debug = false
-lto = true
-codegen-units = 1
+# [profile.release]
+# opt-level = 3
+# debug = false
+# lto = true
+# codegen-units = 1

@@ -1,5 +1,6 @@
 use cgmath::{Vector2, Vector3};
-use rand::{Rng, StdRng};
+use rand::Rng;
+use rand::prelude::ThreadRng;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use std::{f32, fmt};
 
@@ -117,8 +118,8 @@ impl Col {
         return Col::new(r, g, b).clamp(0.0, 1.0);
     }
 
-    pub fn from_random_hue(rng: &mut StdRng) -> Col {
-        let val = rng.gen_range(0.0, 1.0);
+    pub fn from_random_hue(rng: &mut ThreadRng) -> Col {
+        let val = rng.gen_range(0.0..1.0);
         return Col::from_hue(val);
     }
 }
